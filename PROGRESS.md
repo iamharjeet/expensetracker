@@ -5,7 +5,7 @@
 
 ## Completed Steps
 - [x] Step 1: Project Setup & GitHub Repository ✅
-- [ ] Step 2: Simple Database & Docker Setup
+- [x] Step 2: Simple Database & Docker Setup ✅
 - [ ] Step 3: Basic REST API - User CRUD
 - [ ] Step 4: Simple Frontend - Part 1 (Structure & Users)
 - [ ] Step 5: Second Entity - Expenses (Simplified)
@@ -25,9 +25,11 @@
 - [ ] Step 19: Terraform - ECS Deployment
 - [ ] Step 20: CI/CD Pipeline & Final Polish
 
-## Current Step: 2
+## Current Step: 3
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
 - GitHub repository initialized and pushed
 - Dependencies: Spring Web, Spring Data JPA, PostgreSQL, Lombok
+- Step 2 completed: PostgreSQL running in Docker, User entity with timestamps and UserRepository created
+- Database table 'users' successfully created with all fields including created_at and updated_at

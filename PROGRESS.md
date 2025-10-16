@@ -6,7 +6,7 @@
 ## Completed Steps
 - [x] Step 1: Project Setup & GitHub Repository ✅
 - [x] Step 2: Simple Database & Docker Setup ✅
-- [ ] Step 3: Basic REST API - User CRUD
+- [x] Step 3: Basic REST API - User CRUD ✅
 - [ ] Step 4: Simple Frontend - Part 1 (Structure & Users)
 - [ ] Step 5: Second Entity - Expenses (Simplified)
 - [ ] Step 6: Add Basic Security (Simple JWT)
@@ -25,7 +25,7 @@
 - [ ] Step 19: Terraform - ECS Deployment
 - [ ] Step 20: CI/CD Pipeline & Final Polish
 
-## Current Step: 3
+## Current Step: 4
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -33,3 +33,30 @@
 - Dependencies: Spring Web, Spring Data JPA, PostgreSQL, Lombok
 - Step 2 completed: PostgreSQL running in Docker, User entity with timestamps and UserRepository created
 - Database table 'users' successfully created with all fields including created_at and updated_at
+- Step 3 completed: Built complete REST API for user management
+- Created 3 new packages: dto, service, controller
+- Created UserDTO, UserService, UserController
+- Implemented 5 REST endpoints (GET all, GET by ID, POST, PUT, DELETE)
+- Successfully tested all endpoints with Postman
+- Layered architecture working: Controller → Service → Repository → Database
+
+## Current Project Structure:
+```
+expensetracker/
+├── docker-compose.yml
+├── PROGRESS.md
+├── README.md
+├── pom.xml
+└── src/main/java/com/harjeet/expensetracker/
+├── ExpensetrackerApplication.java
+├── controller/
+│   └── UserController.java
+├── dto/
+│   └── UserDTO.java
+├── model/
+│   └── User.java
+├── repository/
+│   └── UserRepository.java
+└── service/
+└── UserService.java
+```

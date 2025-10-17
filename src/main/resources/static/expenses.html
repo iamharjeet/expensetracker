@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Management - Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional styles specific to expenses page */
+        .expense-row {
+            transition: background-color 0.2s;
+        }
+
+        .expense-row:hover {
+            background-color: #f5f5f5;
+        }
+
+        .expense-amount {
+            font-weight: 600;
+            color: #d32f2f;
+        }
+
+        .expense-description {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .expense-date {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-start;
+        }
+
+        .btn-edit,
+        .btn-delete {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background-color: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-delete {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+        }
+
+        /* Table styling improvements */
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table thead th {
+            background-color: #6200ea;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+        }
+
+        .table thead th:first-child {
+            border-radius: 8px 0 0 0;
+        }
+
+        .table thead th:last-child {
+            border-radius: 0 8px 0 0;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Form improvements */
+        .card-body form {
+            width: 100%;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.85rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6200ea;
+            box-shadow: 0 0 0 3px rgba(98, 0, 234, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.85rem 1.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #6200ea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #5000ca;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(98, 0, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: #757575;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #616161;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(117, 117, 117, 0.3);
+        }
+
+        /* Empty state and loading improvements */
+        .empty-state,
+        .loading-spinner {
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 0.75rem;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .btn-edit,
+            .btn-delete {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-brand">💰 Expense Tracker</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="users.html">Users</a>
+            <a href="expenses.html" class="active">Expenses</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Container -->
+<div class="container">
+    <div class="page-header">
+        <h1>Expense Management</h1>
+        <p>Track and manage your expenses</p>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="two-column-layout">
+        <!-- Left Column - Form -->
+        <div class="column">
+            <div class="card">
+                <div class="card-header">
+                    <h2 id="formTitle">Add New Expense</h2>
+                </div>
+                <div class="card-body">
+                    <form id="expenseForm">
+                        <input type="hidden" id="expenseId">
+
+                        <div class="form-group">
+                            <label for="description">Description *</label>
+                            <input type="text" id="description" required
+                                   placeholder="e.g., Grocery Shopping">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="amount">Amount ($) *</label>
+                            <input type="number" id="amount" step="0.01" min="0.01" required
+                                   placeholder="0.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="date">Date *</label>
+                            <input type="date" id="date" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userId">User ID *</label>
+                            <input type="number" id="userId" required
+                                   placeholder="Enter user ID">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                Add Expense
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="cancelBtn"
+                                    style="display: none;">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Expenses Table -->
+        <div class="column">
+            <div class="card">
+                <div class="card-header">
+                    <h2>All Expenses</h2>
+                    <span class="badge" id="expenseCount">0</span>
+                </div>
+                <div class="card-body">
+                    <!-- Loading Spinner -->
+                    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Loading expenses...</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <div class="empty-icon">📊</div>
+                        <h3>No expenses yet</h3>
+                        <p>Start tracking your expenses by adding one!</p>
+                    </div>
+
+                    <!-- Expenses Table -->
+                    <div id="expensesTableContainer" style="display: none;">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>User ID</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="expensesTableBody">
+                            <!-- Expenses will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="messageContainer"></div>
+</div>
+
+<script src="js/expenses.js"></script>
+</body>
+</html>

@@ -8,7 +8,7 @@
 - [x] Step 2: Simple Database & Docker Setup ✅
 - [x] Step 3: Basic REST API - User CRUD ✅
 - [x] Step 4: Simple Frontend - Part 1 (Structure & Users) ✅
-- [ ] Step 5: Second Entity - Expenses (Simplified)
+- [x] Step 5: Second Entity - Expenses (Simplified) ✅
 - [ ] Step 6: Add Basic Security (Simple JWT)
 - [ ] Step 7: Enhance Data Model - Categories & Accounts
 - [ ] Step 8: User Registration & Profile
@@ -44,7 +44,17 @@
 - Two-column responsive layout with modern card-based design
 - Full CRUD functionality: Create, Read, Update, Delete users via UI
 - Features: loading spinner, success/error messages, user count badge, empty state, smooth animations
-- Application accessible at http://localhost:8080 with working frontend-backend integration
+- Application accessible at http://localhost:8080 with working frontend-backend integration 
+- Step 5 completed: Built complete expense tracking system
+- Created Expense entity with BigDecimal for amount, LocalDate for date, and audit timestamps
+- Created ExpenseRepository with custom query methods (findByUserId, findByUserIdOrderByDateDesc)
+- Created ExpenseDTO, ExpenseService, ExpenseController following same layered architecture
+- Implemented 6 REST endpoints including special endpoint for getting expenses by user
+- Created expenses.html with enhanced styling and two-column layout
+- Created expenses.js with full CRUD operations, amount/date formatting, loading states
+- Updated styles.css with clean, minimal design for better UI across all pages
+- Database table 'expenses' successfully created with all fields and proper constraints
+- Successfully tested complete expense management flow: add, edit, delete, view
 
 ## Current Project Structure:
 ```
@@ -57,21 +67,28 @@ expensetracker/
     ├── java/com/harjeet/expensetracker/
     │   ├── ExpensetrackerApplication.java
     │   ├── controller/
-    │   │   └── UserController.java
+    │   │   ├── UserController.java
+    │   │   └── ExpenseController.java      ✅ NEW
     │   ├── dto/
-    │   │   └── UserDTO.java
+    │   │   ├── UserDTO.java
+    │   │   └── ExpenseDTO.java             ✅ NEW
     │   ├── model/
-    │   │   └── User.java
+    │   │   ├── User.java
+    │   │   └── Expense.java                ✅ NEW
     │   ├── repository/
-    │   │   └── UserRepository.java
+    │   │   ├── UserRepository.java
+    │   │   └── ExpenseRepository.java      ✅ NEW
     │   └── service/
-    │       └── UserService.java
+    │       ├── UserService.java
+    │       └── ExpenseService.java         ✅ NEW
     └── resources/
         ├── static/
-        │   ├── index.html          ✅ NEW
-        │   ├── users.html          ✅ NEW
-        │   ├── styles.css          ✅ NEW
+        │   ├── index.html
+        │   ├── users.html
+        │   ├── expenses.html               ✅ NEW
+        │   ├── styles.css                  ✅ UPDATED
         │   └── js/
-        │       └── app.js          ✅ NEW
+        │       ├── app.js
+        │       └── expenses.js             ✅ NEW
         └── application.properties
 ```

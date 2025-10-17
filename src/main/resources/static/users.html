@@ -3,110 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management - Expense Tracker</title>
+    <title>Users - Expense Tracker</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="container">
-    <header>
-        <h1>👥 User Management</h1>
-        <p class="subtitle">Manage Your Users</p>
-    </header>
+    <!-- Header with User Info and Logout -->
+    <div class="user-info">
+        <span>Logged in as: <strong id="currentUsername"></strong></span>
+        <div>
+            <a href="expenses.html" class="btn btn-secondary" style="text-decoration: none;">Expenses</a>
+            <button onclick="logout()" class="btn btn-logout">Logout</button>
+        </div>
+    </div>
 
-    <main>
-        <div class="page-header">
-            <h2>User Dashboard</h2>
-            <a href="index.html" class="back-link">← Back to Home</a>
+    <h1>User Management</h1>
+
+    <div id="message" class="message"></div>
+    <div id="loading" class="spinner" style="display: none;"></div>
+
+    <div class="two-column-layout">
+        <!-- Left Column: Add/Edit User Form -->
+        <div class="card">
+            <h2 id="formTitle">Add New User</h2>
+            <form id="userForm">
+                <input type="hidden" id="userId">
+
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <span id="submitBtnText">Add User</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancel</button>
+                </div>
+            </form>
         </div>
 
-        <!-- Message Area -->
-        <div id="messageArea"></div>
-
-        <!-- Two Column Layout -->
-        <div class="two-column-layout">
-            <!-- Left Column - Form -->
-            <div class="left-column">
-                <div class="form-card">
-                    <div class="card-header">
-                        <h3 id="formTitle">➕ Add New User</h3>
-                    </div>
-                    <form id="userForm">
-                        <input type="hidden" id="userId">
-
-                        <div class="form-group">
-                            <label for="username">👤 Username</label>
-                            <input type="text" id="username" name="username" placeholder="Enter username" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="email">📧 Email</label>
-                            <input type="email" id="email" name="email" placeholder="Enter email address" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">🔒 Password</label>
-                            <input type="password" id="password" name="password" placeholder="Enter password" required>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-success btn-block" id="submitBtn">
-                                <span>✓</span> Add User
-                            </button>
-                            <button type="button" class="btn btn-cancel btn-block" id="cancelBtn" style="display: none;">
-                                <span>✕</span> Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
+        <!-- Right Column: Users List -->
+        <div class="card">
+            <div class="card-header">
+                <h2>All Users</h2>
+                <span class="badge" id="userCount">0</span>
             </div>
 
-            <!-- Right Column - Users List -->
-            <div class="right-column">
-                <div class="users-card">
-                    <div class="card-header">
-                        <h3>📋 All Users</h3>
-                        <span class="user-count" id="userCount">Loading...</span>
-                    </div>
-
-                    <div id="loadingArea" class="loading">
-                        <div class="spinner"></div>
-                        <p>Loading users...</p>
-                    </div>
-
-                    <div id="usersTableContainer" style="display: none;">
-                        <div class="table-wrapper">
-                            <table class="users-table">
-                                <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Created</th>
-                                    <th>Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody id="usersTableBody">
-                                <!-- Users will be populated here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div id="emptyState" class="empty-state" style="display: none;">
-                        <div class="empty-icon">👤</div>
-                        <h3>No users yet</h3>
-                        <p>Add your first user using the form</p>
-                    </div>
-                </div>
+            <div id="emptyState" class="empty-state">
+                <p>No users found. Add your first user!</p>
             </div>
+
+            <table id="usersTable" style="display: none;">
+                <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                </tbody>
+            </table>
         </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Expense Tracker | Built with Spring Boot & PostgreSQL</p>
-    </footer>
+    </div>
 </div>
 
+<script src="js/auth.js"></script>
 <script src="js/app.js"></script>
+<script>
+    // Protect this page - redirect to login if not authenticated
+    protectPage();
+
+    // Display current user
+    const user = getCurrentUser();
+    document.getElementById('currentUsername').textContent = user.username;
+
+    // Load users on page load
+    loadUsers();
+</script>
 </body>
 </html>

@@ -1,277 +1,184 @@
-// API Base URL
-const API_BASE_URL = 'http://localhost:8080/api/users';
+//const API_URL = 'http://localhost:8080/api';
 
-// State
-let isEditMode = false;
-let currentUserId = null;
-
-// DOM Elements
-const userForm = document.getElementById('userForm');
-const usersTableBody = document.getElementById('usersTableBody');
-const messageArea = document.getElementById('messageArea');
-const loadingArea = document.getElementById('loadingArea');
-const usersTableContainer = document.getElementById('usersTableContainer');
-const emptyState = document.getElementById('emptyState');
-const formTitle = document.getElementById('formTitle');
-const submitBtn = document.getElementById('submitBtn');
-const cancelBtn = document.getElementById('cancelBtn');
-const userIdInput = document.getElementById('userId');
-const usernameInput = document.getElementById('username');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    loadUsers();
-
-    // Form submit event
-    userForm.addEventListener('submit', handleFormSubmit);
-
-    // Cancel button event
-    cancelBtn.addEventListener('click', resetForm);
-});
+// Get headers with authentication token
+function getAuthHeaders() {
+    const token = getAuthToken();
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+}
 
 // Load all users
 async function loadUsers() {
-    try {
-        showLoading();
-        const response = await fetch(API_BASE_URL);
+    const loading = document.getElementById('loading');
+    const emptyState = document.getElementById('emptyState');
+    const usersTable = document.getElementById('usersTable');
+    const usersTableBody = document.getElementById('usersTableBody');
+    const userCount = document.getElementById('userCount');
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch users');
+    try {
+        loading.style.display = 'block';
+
+        const response = await fetch(`${API_URL}/users`, {
+            headers: getAuthHeaders()
+        });
+
+        if (response.status === 403 || response.status === 401) {
+            // Unauthorized - redirect to login
+            logout();
+            return;
         }
 
         const users = await response.json();
-        displayUsers(users);
-        hideLoading();
+
+        usersTableBody.innerHTML = '';
+        userCount.textContent = users.length;
+
+        if (users.length === 0) {
+            emptyState.style.display = 'block';
+            usersTable.style.display = 'none';
+        } else {
+            emptyState.style.display = 'none';
+            usersTable.style.display = 'table';
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>
+                        <button class="btn btn-small btn-secondary" onclick="editUser(${user.id})">Edit</button>
+                        <button class="btn btn-small btn-danger" onclick="deleteUser(${user.id})">Delete</button>
+                    </td>
+                `;
+                usersTableBody.appendChild(row);
+            });
+        }
     } catch (error) {
-        console.error('Error loading users:', error);
-        showMessage('Error loading users. Please make sure the backend is running.', 'error');
-        hideLoading();
+        showMessage('Error loading users: ' + error.message, 'error');
+    } finally {
+        loading.style.display = 'none';
     }
 }
 
-
-// Handle form submit (Add or Update)
-async function handleFormSubmit(e) {
+// Add or Update user
+document.getElementById('userForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const userData = {
-        username: usernameInput.value.trim(),
-        email: emailInput.value.trim(),
-        password: passwordInput.value
-    };
+    const userId = document.getElementById('userId').value;
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const userData = { username, email, password };
 
     try {
-        if (isEditMode) {
-            await updateUser(currentUserId, userData);
+        let response;
+        if (userId) {
+            // Update existing user
+            response = await fetch(`${API_URL}/users/${userId}`, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(userData)
+            });
         } else {
-            await createUser(userData);
-        }
-    } catch (error) {
-        console.error('Error submitting form:', error);
-        showMessage('Error saving user. Please try again.', 'error');
-    }
-}
-
-// Create new user
-async function createUser(userData) {
-    try {
-        const response = await fetch(API_BASE_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(userData)
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to create user');
+            // Create new user
+            response = await fetch(`${API_URL}/users`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(userData)
+            });
         }
 
-        showMessage('User created successfully!', 'success');
-        resetForm();
-        loadUsers();
-    } catch (error) {
-        throw error;
-    }
-}
-
-// Update existing user
-async function updateUser(id, userData) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(userData)
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to update user');
+        if (response.status === 403 || response.status === 401) {
+            logout();
+            return;
         }
 
-        showMessage('User updated successfully!', 'success');
-        resetForm();
-        loadUsers();
+        if (response.ok) {
+            showMessage(userId ? 'User updated successfully!' : 'User added successfully!', 'success');
+            resetForm();
+            loadUsers();
+        } else {
+            showMessage('Error saving user', 'error');
+        }
     } catch (error) {
-        throw error;
+        showMessage('Error: ' + error.message, 'error');
     }
-}
+});
 
-// Edit user (populate form)
+// Edit user
 async function editUser(id) {
     try {
-        const response = await fetch(`${API_BASE_URL}/${id}`);
+        const response = await fetch(`${API_URL}/users/${id}`, {
+            headers: getAuthHeaders()
+        });
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch user details');
+        if (response.status === 403 || response.status === 401) {
+            logout();
+            return;
         }
 
         const user = await response.json();
 
-        // Switch to edit mode
-        isEditMode = true;
-        currentUserId = id;
+        document.getElementById('userId').value = user.id;
+        document.getElementById('username').value = user.username;
+        document.getElementById('email').value = user.email;
+        document.getElementById('password').value = '';
+        document.getElementById('formTitle').textContent = 'Edit User';
+        document.getElementById('submitBtnText').textContent = 'Update User';
 
-        // Update form
-        formTitle.textContent = 'Update User';
-        submitBtn.textContent = 'Update User';
-        submitBtn.className = 'btn btn-warning';
-        cancelBtn.style.display = 'inline-block';
-
-        // Populate form fields
-        userIdInput.value = user.id;
-        usernameInput.value = user.username;
-        emailInput.value = user.email;
-        passwordInput.value = '';
-        passwordInput.placeholder = 'Leave blank to keep current password';
-        passwordInput.required = false;
-
-        // Scroll to form
-        userForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-        console.error('Error loading user for edit:', error);
-        showMessage('Error loading user details.', 'error');
+        showMessage('Error loading user: ' + error.message, 'error');
     }
 }
 
 // Delete user
-async function deleteUser(id, username) {
-    if (!confirm(`Are you sure you want to delete user "${username}"?`)) {
+async function deleteUser(id) {
+    if (!confirm('Are you sure you want to delete this user?')) {
         return;
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/${id}`, {
-            method: 'DELETE'
+        const response = await fetch(`${API_URL}/users/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to delete user');
+        if (response.status === 403 || response.status === 401) {
+            logout();
+            return;
         }
 
-        showMessage('User deleted successfully!', 'success');
-        loadUsers();
+        if (response.ok) {
+            showMessage('User deleted successfully!', 'success');
+            loadUsers();
+        } else {
+            showMessage('Error deleting user', 'error');
+        }
     } catch (error) {
-        console.error('Error deleting user:', error);
-        showMessage('Error deleting user. Please try again.', 'error');
+        showMessage('Error: ' + error.message, 'error');
     }
 }
 
-// Reset form to add mode
+// Reset form
 function resetForm() {
-    isEditMode = false;
-    currentUserId = null;
-
-    // Reset form
-    userForm.reset();
-    formTitle.textContent = 'Add New User';
-    submitBtn.textContent = 'Add User';
-    submitBtn.className = 'btn btn-success';
-    cancelBtn.style.display = 'none';
-
-    // Reset password field
-    passwordInput.placeholder = '';
-    passwordInput.required = true;
-
-    userIdInput.value = '';
+    document.getElementById('userForm').reset();
+    document.getElementById('userId').value = '';
+    document.getElementById('formTitle').textContent = 'Add New User';
+    document.getElementById('submitBtnText').textContent = 'Add User';
 }
 
 // Show message
 function showMessage(message, type) {
-    messageArea.innerHTML = `
-        <div class="message message-${type}">
-            ${message}
-        </div>
-    `;
+    const messageDiv = document.getElementById('message');
+    messageDiv.textContent = message;
+    messageDiv.className = `message ${type}`;
+    messageDiv.style.display = 'block';
 
-    // Auto-hide after 3 seconds
     setTimeout(() => {
-        messageArea.innerHTML = '';
-    }, 3000);
-}
-
-// Show loading
-function showLoading() {
-    loadingArea.style.display = 'block';
-    usersTableContainer.style.display = 'none';
-    emptyState.style.display = 'none';
-}
-
-// Hide loading
-function hideLoading() {
-    loadingArea.style.display = 'none';
-}
-
-// Format date
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-// Display users in table
-function displayUsers(users) {
-    usersTableBody.innerHTML = '';
-
-    // Update user count
-    const userCount = document.getElementById('userCount');
-    if (userCount) {
-        userCount.textContent = `${users.length} user${users.length !== 1 ? 's' : ''}`;
-    }
-
-    if (users.length === 0) {
-        usersTableContainer.style.display = 'none';
-        emptyState.style.display = 'block';
-        return;
-    }
-
-    usersTableContainer.style.display = 'block';
-    emptyState.style.display = 'none';
-
-    users.forEach(user => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><strong>#${user.id}</strong></td>
-            <td>${user.username}</td>
-            <td>${user.email}</td>
-            <td>${formatDate(user.createdAt)}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn btn-warning btn-small" onclick="editUser(${user.id})">✏️ Edit</button>
-                    <button class="btn btn-danger btn-small" onclick="deleteUser(${user.id}, '${user.username}')">🗑️ Delete</button>
-                </div>
-            </td>
-        `;
-        usersTableBody.appendChild(row);
-    });
+        messageDiv.style.display = 'none';
+    }, 5000);
 }

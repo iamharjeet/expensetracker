@@ -8,47 +8,52 @@
 </head>
 <body>
 <div class="container">
-    <header>
-        <h1>💰 Expense Tracker</h1>
-        <p class="subtitle">Your Personal Finance Manager</p>
-    </header>
+    <div class="auth-container">
+        <div class="auth-card" style="max-width: 600px;">
+            <h1>💰 Expense Tracker</h1>
+            <p class="subtitle">Track your expenses, manage your budget, achieve your financial goals</p>
 
-    <main>
-        <div class="welcome-section">
-            <h2>Welcome to Expense Tracker</h2>
-            <p>A cloud-native application to help you track your expenses, manage budgets, and take control of your finances.</p>
-        </div>
-
-        <div class="features">
-            <div class="feature-card">
-                <h3>👥 User Management</h3>
-                <p>Manage user accounts and profiles</p>
-                <a href="users.html" class="btn btn-primary">Go to Users</a>
+            <div style="margin: 30px 0;">
+                <h3 style="color: #4a5568; margin-bottom: 15px;">Features</h3>
+                <ul style="color: #718096; line-height: 1.8;">
+                    <li>📊 Track all your expenses in one place</li>
+                    <li>👥 Manage multiple users</li>
+                    <li>💳 Organize expenses by categories</li>
+                    <li>📈 View detailed reports and analytics</li>
+                    <li>🔒 Secure JWT-based authentication</li>
+                </ul>
             </div>
 
-            <div class="feature-card">
-                <h3>💵 Track Expenses</h3>
-                <p>Record and categorize your expenses</p>
-                <button class="btn btn-secondary" disabled>Coming Soon</button>
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <a href="login.html" class="btn btn-primary" style="flex: 1; text-align: center; text-decoration: none;">
+                    Login
+                </a>
+                <a href="register.html" class="btn btn-secondary" style="flex: 1; text-align: center; text-decoration: none;">
+                    Register
+                </a>
             </div>
 
-            <div class="feature-card">
-                <h3>📊 Reports</h3>
-                <p>View detailed financial reports</p>
-                <button class="btn btn-secondary" disabled>Coming Soon</button>
-            </div>
-
-            <div class="feature-card">
-                <h3>🎯 Budgets</h3>
-                <p>Set and track your budgets</p>
-                <button class="btn btn-secondary" disabled>Coming Soon</button>
+            <div id="authenticatedSection" style="display: none; margin-top: 20px;">
+                <div class="user-info">
+                    <span>Welcome back, <strong id="currentUsername"></strong>!</span>
+                </div>
+                <a href="users.html" class="btn btn-primary btn-block" style="text-decoration: none; text-align: center; display: block;">
+                    Go to Dashboard
+                </a>
             </div>
         </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Expense Tracker | Built with Spring Boot & PostgreSQL</p>
-    </footer>
+    </div>
 </div>
+
+<script src="js/auth.js"></script>
+<script>
+    // Check if user is already logged in
+    if (isAuthenticated()) {
+        const user = getCurrentUser();
+        document.getElementById('currentUsername').textContent = user.username;
+        document.getElementById('authenticatedSection').style.display = 'block';
+        document.querySelector('a[href="login.html"]').parentElement.style.display = 'none';
+    }
+</script>
 </body>
 </html>

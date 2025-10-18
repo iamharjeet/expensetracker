@@ -1,9 +1,13 @@
 package com.harjeet.expensetracker.service;
 
 import com.harjeet.expensetracker.dto.ExpenseDTO;
+import com.harjeet.expensetracker.model.Account;
 import com.harjeet.expensetracker.model.Expense;
+import com.harjeet.expensetracker.repository.AccountRepository;
+import com.harjeet.expensetracker.repository.CategoryRepository;
 import com.harjeet.expensetracker.repository.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,7 +17,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExpenseService {
 
-    private final ExpenseRepository expenseRepository;
+    @Autowired
+    private ExpenseRepository expenseRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     //Get all expenses
     public List<ExpenseDTO> getAllExpenses(){
@@ -51,6 +62,9 @@ public class ExpenseService {
         expense.setDescription(expenseDTO.getDescription());
         expense.setAmount(expenseDTO.getAmount());
         expense.setDate(expenseDTO.getDate());
+
+        expense.setCategoryId(expenseDTO.getCategoryId());
+        expense.setAccountId(expenseDTO.getAccountId());
         expense.setUserId(expenseDTO.getUserId());
 
         Expense updatedExpense = expenseRepository.save(expense);
@@ -67,15 +81,32 @@ public class ExpenseService {
 
     // Convert Expense entity to ExpenseDTO
     private ExpenseDTO convertToDTO(Expense expense){
-        return new ExpenseDTO(
+        ExpenseDTO dto = new ExpenseDTO(
                 expense.getId(),
                 expense.getDescription(),
                 expense.getAmount(),
                 expense.getDate(),
                 expense.getUserId(),
+                expense.getCategoryId(),
+                expense.getAccountId(),
+                null,  // categoryName - will be set below
+                null,                   // accountName - will be set below
                 expense.getCreatedAt(),
                 expense.getUpdatedAt()
         );
+
+        // Fetch and set category name if categoryId exists
+        if(expense.getCategoryId()!=null){
+            categoryRepository.findById(expense.getCategoryId())
+                    .ifPresent(category -> dto.setCategoryName(category.getName()));
+        }
+
+        // Fetch and set account name if accountId  exists
+        if(expense.getAccountId()!= null){
+            accountRepository.findById(expense.getAccountId())
+                    .ifPresent(account -> dto.setAccountName(account.getName()));
+        }
+        return dto;
     }
 
     //Convert ExpenseDTO to Expense Entity
@@ -86,6 +117,8 @@ public class ExpenseService {
         expense.setAmount(expenseDTO.getAmount());
         expense.setDate(expenseDTO.getDate());
         expense.setUserId(expenseDTO.getUserId());
+        expense.setCategoryId(expenseDTO.getCategoryId());
+        expense.setAccountId(expenseDTO.getAccountId());
         return expense;
     }
 }

@@ -18,7 +18,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [x] Step 5: Second Entity - Expenses (Simplified) ✅
 - [x] Step 6: Add Basic Security (Simple JWT) ✅
 - [x] Step 7: User Registration (Simplified - No Email Verification) ✅
-- [ ] Step 8: Enhance Data Model - Categories & Accounts
+- [x] Step 8: Enhance Data Model - Categories & Accounts ✅
 - [ ] Step 9: Add Database Migrations & Schema Documentation
 - [ ] Step 10: Transaction Management with Pagination
 - [ ] Step 11: Budget Management (Basic)
@@ -84,6 +84,22 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - Added 401/403 response handling to logout users with invalid/expired tokens
 - Successfully tested complete authentication flow: register → login → access protected pages → logout
 - All CRUD operations for users and expenses now require valid JWT authentication
+- Step 8 completed: Enhanced data model with Categories and Accounts
+- Created Category entity (id, name, type enum, timestamps) and Account entity (id, name, balance, type, userId, timestamps)
+- Updated Expense entity with categoryId and accountId foreign keys
+- Created CategoryRepository (findByType, findByOrderByNameAsc) and AccountRepository (findByUserId, findByUserIdOrderByNameAsc)
+- Created CategoryDTO, AccountDTO, and updated ExpenseDTO with categoryName and accountName fields
+- Created CategoryService (read-only) and AccountService (full CRUD)
+- Updated ExpenseService to fetch and populate category/account names in DTOs
+- Created CategoryController (3 endpoints: GET all, GET by type, GET by id) and AccountController (6 CRUD endpoints)
+- Created new config package with DataInitializer.java to auto-populate 12 default categories on startup (4 INCOME, 8 EXPENSE)
+- Created categories.html with filter tabs (All/Income/Expense) and categories.js for display logic
+- Created accounts.html with two-column layout (form + list) and accounts.js with full CRUD
+- Updated expenses.html with category and account dropdowns, and expenses.js to load/display category and account data
+- Updated LoginResponse and AuthService to include userId, updated auth.js to store userId in localStorage
+- Enhanced styles.css with category cards, tabs, account badges, and responsive design
+- Database tables 'categories' and 'accounts' created, expense table updated with category_id and account_id columns
+- Successfully tested categories display with filtering, accounts CRUD, and expense tracking with categorization
 
 ## Current Project Structure:
 ```
@@ -95,43 +111,59 @@ expensetracker/
 └── src/main/
     ├── java/com/harjeet/expensetracker/
     │   ├── ExpensetrackerApplication.java
-    │   ├── auth/                          ✅ NEW
-    │   │   ├── AuthController.java        ✅ NEW
-    │   │   ├── AuthService.java           ✅ NEW
-    │   │   ├── LoginRequest.java          ✅ NEW
-    │   │   ├── LoginResponse.java         ✅ NEW
-    │   │   └── RegisterRequest.java       ✅ NEW
+    │   ├── auth/
+    │   │   ├── AuthController.java
+    │   │   ├── AuthService.java
+    │   │   ├── LoginRequest.java
+    │   │   ├── LoginResponse.java          ✅ UPDATED (added userId field)
+    │   │   └── RegisterRequest.java
+    │   ├── config/                          ✅ NEW PACKAGE
+    │   │   └── DataInitializer.java         ✅ NEW
     │   ├── controller/
     │   │   ├── UserController.java
-    │   │   └── ExpenseController.java
+    │   │   ├── ExpenseController.java
+    │   │   ├── CategoryController.java      ✅ NEW
+    │   │   └── AccountController.java       ✅ NEW
     │   ├── dto/
     │   │   ├── UserDTO.java
-    │   │   └── ExpenseDTO.java
+    │   │   ├── ExpenseDTO.java              ✅ UPDATED (added categoryId, accountId, categoryName, accountName)
+    │   │   ├── CategoryDTO.java             ✅ NEW
+    │   │   └── AccountDTO.java              ✅ NEW
     │   ├── model/
-    │   │   ├── User.java                  ✅ UPDATED (added enabled field)
-    │   │   └── Expense.java
+    │   │   ├── User.java
+    │   │   ├── Expense.java                 ✅ UPDATED (added categoryId, accountId)
+    │   │   ├── Category.java                ✅ NEW
+    │   │   └── Account.java                 ✅ NEW
     │   ├── repository/
-    │   │   ├── UserRepository.java        ✅ UPDATED (added findByUsername, findByEmail)
-    │   │   └── ExpenseRepository.java
-    │   ├── security/                      ✅ NEW
-    │   │   ├── CustomUserDetailsService.java  ✅ NEW
-    │   │   ├── JwtAuthenticationFilter.java   ✅ NEW
-    │   │   ├── JwtTokenProvider.java      ✅ NEW
-    │   │   └── SecurityConfig.java        ✅ NEW
+    │   │   ├── UserRepository.java
+    │   │   ├── ExpenseRepository.java
+    │   │   ├── CategoryRepository.java      ✅ NEW
+    │   │   └── AccountRepository.java       ✅ NEW
+    │   ├── security/
+    │   │   ├── CustomUserDetailsService.java
+    │   │   ├── JwtAuthenticationFilter.java
+    │   │   ├── JwtTokenProvider.java
+    │   │   └── SecurityConfig.java
     │   └── service/
     │       ├── UserService.java
-    │       └── ExpenseService.java
+    │       ├── ExpenseService.java          ✅ UPDATED (fetches category and account names)
+    │       ├── CategoryService.java         ✅ NEW
+    │       └── AccountService.java          ✅ NEW
     └── resources/
         ├── static/
-        │   ├── index.html                 ✅ UPDATED
-        │   ├── login.html                 ✅ NEW
-        │   ├── register.html              ✅ NEW
-        │   ├── users.html                 ✅ UPDATED
-        │   ├── expenses.html              ✅ UPDATED
-        │   ├── styles.css                 ✅ UPDATED (added auth page styles)
+        │   ├── index.html
+        │   ├── login.html
+        │   ├── register.html
+        │   ├── users.html
+        │   ├── expenses.html                ✅ UPDATED (added category and account dropdowns)
+        │   ├── categories.html              ✅ NEW
+        │   ├── accounts.html                ✅ NEW
+        │   ├── styles.css                   ✅ UPDATED (added category/account styles)
         │   └── js/
-        │       ├── app.js                 ✅ UPDATED (added JWT auth)
-        │       ├── auth.js                ✅ NEW
-        │       └── expenses.js            ✅ UPDATED (added JWT auth)
+        │       ├── app.js
+        │       ├── auth.js                  ✅ UPDATED (stores userId in localStorage)
+        │       ├── expenses.js              ✅ UPDATED (loads categories and accounts, removed API_URL)
+        │       ├── categories.js            ✅ NEW
+        │       └── accounts.js              ✅ NEW
         └── application.properties
 ```

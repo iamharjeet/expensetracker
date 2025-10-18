@@ -30,6 +30,7 @@ async function handleLogin(event) {
             localStorage.setItem('token', data.token);
             localStorage.setItem('username', data.username);
             localStorage.setItem('email', data.email);
+            localStorage.setItem('userId', data.userId);  // Add this line
 
             showMessage('Login successful! Redirecting...', 'success');
 
@@ -127,6 +128,7 @@ function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     localStorage.removeItem('email');
+    localStorage.removeItem('userId');  // Add this line
     window.location.href = 'login.html';
 }
 

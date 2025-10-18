@@ -9,44 +9,37 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "expenses")
+@Table(name = "accounts")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Expense {
+public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String description;
+    private String name;
 
-    @Column(nullable= false, precision = 15, scale = 2)
-    private BigDecimal amount;
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal balance;
 
     @Column(nullable = false)
-    private LocalDate date;
+    private String type;  //eg. Cash, Bank, Credit Card
 
-    @Column(nullable = false, name="user_id")
+    @Column(name="user_id", nullable = false)
     private Long userId;
 
-    @Column(name="category_id")
-    private Long categoryId;
-
-    @Column(name="account_id")
-    private Long accountId;
-
     @CreatedDate
-    @Column(nullable = false, updatable = false, name="created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(nullable = false, name="updated_at")
+    @Column(name="updated_at")
     private LocalDateTime updatedAt;
 }

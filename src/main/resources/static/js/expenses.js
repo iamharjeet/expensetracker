@@ -1,192 +1,342 @@
 //const API_URL = 'http://localhost:8080/api';
+let editingExpenseId = null;
+let currentUserId = null;
+let categories = [];
+let accounts = [];
 
-// Get headers with authentication token
-function getAuthHeaders() {
-    const token = getAuthToken();
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    };
-}
+// Check authentication on page load
+document.addEventListener('DOMContentLoaded', function() {
+    if (!isAuthenticated()) {
+        window.location.href = 'login.html';
+        return;
+    }
 
-// Load all expenses
-async function loadExpenses() {
-    const loading = document.getElementById('loading');
-    const emptyState = document.getElementById('emptyState');
-    const expensesTable = document.getElementById('expensesTable');
-    const expensesTableBody = document.getElementById('expensesTableBody');
-    const expenseCount = document.getElementById('expenseCount');
+    displayUsername();
+    currentUserId = localStorage.getItem('userId');
+    setDefaultDate();
+    loadCategories();
+    loadAccounts();
+    loadExpenses();
 
-    try {
-        loading.style.display = 'block';
+    // Form submit handler
+    document.getElementById('expenseForm').addEventListener('submit', handleSubmit);
+});
 
-        const response = await fetch(`${API_URL}/expenses`, {
-            headers: getAuthHeaders()
-        });
-
-        if (response.status === 403 || response.status === 401) {
-            // Unauthorized - redirect to login
-            logout();
-            return;
-        }
-
-        const expenses = await response.json();
-
-        expensesTableBody.innerHTML = '';
-        expenseCount.textContent = expenses.length;
-
-        if (expenses.length === 0) {
-            emptyState.style.display = 'block';
-            expensesTable.style.display = 'none';
-        } else {
-            emptyState.style.display = 'none';
-            expensesTable.style.display = 'table';
-
-            expenses.forEach(expense => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${expense.description}</td>
-                    <td>$${parseFloat(expense.amount).toFixed(2)}</td>
-                    <td>${formatDate(expense.date)}</td>
-                    <td>${expense.userId}</td>
-                    <td>
-                        <button class="btn btn-small btn-secondary" onclick="editExpense(${expense.id})">Edit</button>
-                        <button class="btn btn-small btn-danger" onclick="deleteExpense(${expense.id})">Delete</button>
-                    </td>
-                `;
-                expensesTableBody.appendChild(row);
-            });
-        }
-    } catch (error) {
-        showMessage('Error loading expenses: ' + error.message, 'error');
-    } finally {
-        loading.style.display = 'none';
+function displayUsername() {
+    const username = localStorage.getItem('username');
+    if (username) {
+        document.getElementById('userWelcome').textContent = `Welcome, ${username}!`;
     }
 }
 
-// Format date for display
-function formatDate(dateString) {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
+function setDefaultDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+}
+
+function loadCategories() {
+    const token = localStorage.getItem('token');
+
+    fetch(`${API_URL}/categories`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (response.status === 401 || response.status === 403) {
+            logout();
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        categories = data;
+        populateCategoryDropdown();
+    })
+    .catch(error => {
+        console.error('Error loading categories:', error);
     });
 }
 
-// Add or Update expense
-document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+function populateCategoryDropdown() {
+    const categorySelect = document.getElementById('categoryId');
+    categorySelect.innerHTML = '<option value="">Select Category</option>';
+
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = `${category.name} (${category.type})`;
+        categorySelect.appendChild(option);
+    });
+}
+
+function loadAccounts() {
+    const token = localStorage.getItem('token');
+
+    fetch(`${API_URL}/accounts/user/${currentUserId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (response.status === 401 || response.status === 403) {
+            logout();
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        accounts = data;
+        populateAccountDropdown();
+    })
+    .catch(error => {
+        console.error('Error loading accounts:', error);
+    });
+}
+
+function populateAccountDropdown() {
+    const accountSelect = document.getElementById('accountId');
+    accountSelect.innerHTML = '<option value="">Select Account</option>';
+
+    accounts.forEach(account => {
+        const option = document.createElement('option');
+        option.value = account.id;
+        option.textContent = `${account.name} (${account.type})`;
+        accountSelect.appendChild(option);
+    });
+}
+
+function loadExpenses() {
+    showLoading(true);
+    const token = localStorage.getItem('token');
+
+    fetch(`${API_URL}/expenses/user/${currentUserId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (response.status === 401 || response.status === 403) {
+            logout();
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        displayExpenses(data);
+        showLoading(false);
+    })
+    .catch(error => {
+        console.error('Error loading expenses:', error);
+        showMessage('Error loading expenses', 'error');
+        showLoading(false);
+    });
+}
+
+function displayExpenses(expenses) {
+    const tbody = document.getElementById('expensesTableBody');
+    const emptyState = document.getElementById('emptyState');
+    const expenseCount = document.getElementById('expenseCount');
+
+    expenseCount.textContent = expenses.length;
+
+    if (expenses.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+    }
+
+    emptyState.style.display = 'none';
+    tbody.innerHTML = expenses.map(expense => `
+        <tr>
+            <td>${formatDate(expense.date)}</td>
+            <td>${expense.description}</td>
+            <td>${expense.categoryName || '-'}</td>
+            <td>${expense.accountName || '-'}</td>
+            <td class="amount">$${parseFloat(expense.amount).toFixed(2)}</td>
+            <td>
+                <button onclick="editExpense(${expense.id})" class="btn-edit">Edit</button>
+                <button onclick="deleteExpense(${expense.id})" class="btn-delete">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function handleSubmit(e) {
     e.preventDefault();
 
-    const expenseId = document.getElementById('expenseId').value;
-    const description = document.getElementById('description').value;
-    const amount = document.getElementById('amount').value;
-    const date = document.getElementById('date').value;
-    const userId = document.getElementById('userId').value;
+    const categoryId = document.getElementById('categoryId').value;
+    const accountId = document.getElementById('accountId').value;
 
-    const expenseData = { description, amount, date, userId };
+    const expenseData = {
+        description: document.getElementById('description').value,
+        amount: parseFloat(document.getElementById('amount').value),
+        date: document.getElementById('date').value,
+        userId: currentUserId,
+        categoryId: categoryId ? parseInt(categoryId) : null,
+        accountId: accountId ? parseInt(accountId) : null
+    };
 
-    try {
-        let response;
-        if (expenseId) {
-            // Update existing expense
-            response = await fetch(`${API_URL}/expenses/${expenseId}`, {
-                method: 'PUT',
-                headers: getAuthHeaders(),
-                body: JSON.stringify(expenseData)
-            });
-        } else {
-            // Create new expense
-            response = await fetch(`${API_URL}/expenses`, {
-                method: 'POST',
-                headers: getAuthHeaders(),
-                body: JSON.stringify(expenseData)
-            });
-        }
-
-        if (response.status === 403 || response.status === 401) {
-            logout();
-            return;
-        }
-
-        if (response.ok) {
-            showMessage(expenseId ? 'Expense updated successfully!' : 'Expense added successfully!', 'success');
-            resetForm();
-            loadExpenses();
-        } else {
-            showMessage('Error saving expense', 'error');
-        }
-    } catch (error) {
-        showMessage('Error: ' + error.message, 'error');
-    }
-});
-
-// Edit expense
-async function editExpense(id) {
-    try {
-        const response = await fetch(`${API_URL}/expenses/${id}`, {
-            headers: getAuthHeaders()
-        });
-
-        if (response.status === 403 || response.status === 401) {
-            logout();
-            return;
-        }
-
-        const expense = await response.json();
-
-        document.getElementById('expenseId').value = expense.id;
-        document.getElementById('description').value = expense.description;
-        document.getElementById('amount').value = expense.amount;
-        document.getElementById('date').value = expense.date;
-        document.getElementById('userId').value = expense.userId;
-        document.getElementById('formTitle').textContent = 'Edit Expense';
-        document.getElementById('submitBtnText').textContent = 'Update Expense';
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-        showMessage('Error loading expense: ' + error.message, 'error');
+    if (editingExpenseId) {
+        updateExpense(editingExpenseId, expenseData);
+    } else {
+        createExpense(expenseData);
     }
 }
 
-// Delete expense
-async function deleteExpense(id) {
+function createExpense(expenseData) {
+    showLoading(true);
+    const token = localStorage.getItem('token');
+
+    fetch(`${API_URL}/expenses`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(expenseData)
+    })
+    .then(response => {
+        if (response.status === 401 || response.status === 403) {
+            logout();
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        showMessage('Expense created successfully!', 'success');
+        resetForm();
+        loadExpenses();
+        showLoading(false);
+    })
+    .catch(error => {
+        console.error('Error creating expense:', error);
+        showMessage('Error creating expense', 'error');
+        showLoading(false);
+    });
+}
+
+function editExpense(id) {
+    showLoading(true);
+    const token = localStorage.getItem('token');
+
+    fetch(`${API_URL}/expenses/${id}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (response.status === 401 || response.status === 403) {
+            logout();
+            return;
+        }
+        return response.json();
+    })
+    .then(expense => {
+        editingExpenseId = expense.id;
+        document.getElementById('description').value = expense.description;
+        document.getElementById('amount').value = expense.amount;
+        document.getElementById('date').value = expense.date;
+        document.getElementById('categoryId').value = expense.categoryId || '';
+        document.getElementById('accountId').value = expense.accountId || '';
+
+        document.getElementById('formTitle').textContent = 'Edit Expense';
+        document.getElementById('submitBtnText').textContent = 'Update Expense';
+        document.getElementById('cancelBtn').style.display = 'inline-block';
+
+        showLoading(false);
+    })
+    .catch(error => {
+        console.error('Error loading expense:', error);
+        showMessage('Error loading expense', 'error');
+        showLoading(false);
+    });
+}
+
+function updateExpense(id, expenseData) {
+    showLoading(true);
+    const token = localStorage.getItem('token');
+
+    fetch(`${API_URL}/expenses/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(expenseData)
+    })
+    .then(response => {
+        if (response.status === 401 || response.status === 403) {
+            logout();
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        showMessage('Expense updated successfully!', 'success');
+        resetForm();
+        loadExpenses();
+        showLoading(false);
+    })
+    .catch(error => {
+        console.error('Error updating expense:', error);
+        showMessage('Error updating expense', 'error');
+        showLoading(false);
+    });
+}
+
+function deleteExpense(id) {
     if (!confirm('Are you sure you want to delete this expense?')) {
         return;
     }
 
-    try {
-        const response = await fetch(`${API_URL}/expenses/${id}`, {
-            method: 'DELETE',
-            headers: getAuthHeaders()
-        });
+    showLoading(true);
+    const token = localStorage.getItem('token');
 
-        if (response.status === 403 || response.status === 401) {
+    fetch(`${API_URL}/expenses/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (response.status === 401 || response.status === 403) {
             logout();
             return;
         }
-
-        if (response.ok) {
-            showMessage('Expense deleted successfully!', 'success');
-            loadExpenses();
-        } else {
-            showMessage('Error deleting expense', 'error');
-        }
-    } catch (error) {
-        showMessage('Error: ' + error.message, 'error');
-    }
+        showMessage('Expense deleted successfully!', 'success');
+        loadExpenses();
+        showLoading(false);
+    })
+    .catch(error => {
+        console.error('Error deleting expense:', error);
+        showMessage('Error deleting expense', 'error');
+        showLoading(false);
+    });
 }
 
-// Reset form
+function cancelEdit() {
+    resetForm();
+}
+
 function resetForm() {
+    editingExpenseId = null;
     document.getElementById('expenseForm').reset();
-    document.getElementById('expenseId').value = '';
+    setDefaultDate();
     document.getElementById('formTitle').textContent = 'Add New Expense';
     document.getElementById('submitBtnText').textContent = 'Add Expense';
-    document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('cancelBtn').style.display = 'none';
 }
 
-// Show message
+function showLoading(show) {
+    document.getElementById('loadingSpinner').style.display = show ? 'flex' : 'none';
+}
+
 function showMessage(message, type) {
     const messageDiv = document.getElementById('message');
     messageDiv.textContent = message;
@@ -195,5 +345,5 @@ function showMessage(message, type) {
 
     setTimeout(() => {
         messageDiv.style.display = 'none';
-    }, 5000);
+    }, 3000);
 }

@@ -39,7 +39,7 @@ public class AuthService {
 
         User user = userRepository.findByUsername(loginRequest.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return new LoginResponse(token, user.getUsername(), user.getEmail());
+        return new LoginResponse(token, user.getUsername(), user.getEmail(), user.getId());
     }
 
     public String register(RegisterRequest registerRequest){

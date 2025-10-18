@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories - Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <!-- User Info Bar -->
+    <div class="user-info-bar">
+        <div class="user-welcome">
+            <span id="userWelcome">Loading...</span>
+        </div>
+        <div class="user-actions">
+            <a href="index.html" class="btn-link">Home</a>
+            <a href="expenses.html" class="btn-link">Expenses</a>
+            <a href="accounts.html" class="btn-link">Accounts</a>
+            <button onclick="logout()" class="btn-logout">Logout</button>
+        </div>
+    </div>
+
+    <h1>Categories</h1>
+
+    <!-- Filter Tabs -->
+    <div class="category-tabs">
+        <button class="tab-btn active" onclick="filterCategories('ALL')">All Categories</button>
+        <button class="tab-btn" onclick="filterCategories('INCOME')">Income</button>
+        <button class="tab-btn" onclick="filterCategories('EXPENSE')">Expense</button>
+    </div>
+
+    <!-- Categories Display -->
+    <div class="categories-grid" id="categoriesGrid">
+        <!-- Categories will be loaded here -->
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="spinner" style="display: none;">
+        <div class="spinner-border"></div>
+    </div>
+
+    <!-- Message Display -->
+    <div id="message" class="message" style="display: none;"></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/categories.js"></script>
+</body>
+</html>

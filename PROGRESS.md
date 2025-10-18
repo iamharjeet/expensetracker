@@ -19,7 +19,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [x] Step 6: Add Basic Security (Simple JWT) ✅
 - [x] Step 7: User Registration (Simplified - No Email Verification) ✅
 - [x] Step 8: Enhance Data Model - Categories & Accounts ✅
-- [ ] Step 9: Add Database Migrations & Schema Documentation
+- [x] Step 9: Add Database Migrations (Essential) ✅
 - [ ] Step 10: Transaction Management with Pagination
 - [ ] Step 11: Budget Management (Basic)
 - [ ] Step 12: Improve Frontend - Dashboard & Charts
@@ -100,6 +100,14 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - Enhanced styles.css with category cards, tabs, account badges, and responsive design
 - Database tables 'categories' and 'accounts' created, expense table updated with category_id and account_id columns
 - Successfully tested categories display with filtering, accounts CRUD, and expense tracking with categorization
+- Step 9 completed: Added professional database migration system using Flyway
+- Added Flyway dependencies (flyway-core and flyway-database-postgresql) to pom.xml for database versioning
+- Created db/migration folder structure under src/main/resources
+- Created 4 migration SQL files: V1__create_users_table.sql, V2__create_categories_table.sql, V3__create_accounts_table.sql, and V4__create_expenses_table.sql
+- Implemented foreign key constraints in migrations: expenses → users (ON DELETE CASCADE), expenses → categories (ON DELETE SET NULL), expenses → accounts (ON DELETE SET NULL), accounts → users (ON DELETE CASCADE)
+- Updated application.properties to change spring.jpa.hibernate.ddl-auto from 'update' to 'validate' and enabled Flyway with baseline-on-migrate setting
+- Successfully tested migrations by dropping the database, running the application, and verifying all 4 tables plus flyway_schema_history table were created correctly with proper constraints
+- Database schema is now version-controlled and reproducible across all environments
 
 ## Current Project Structure:
 ```
@@ -115,30 +123,30 @@ expensetracker/
     │   │   ├── AuthController.java
     │   │   ├── AuthService.java
     │   │   ├── LoginRequest.java
-    │   │   ├── LoginResponse.java          ✅ UPDATED (added userId field)
+    │   │   ├── LoginResponse.java
     │   │   └── RegisterRequest.java
-    │   ├── config/                          ✅ NEW PACKAGE
-    │   │   └── DataInitializer.java         ✅ NEW
+    │   ├── config/
+    │   │   └── DataInitializer.java
     │   ├── controller/
     │   │   ├── UserController.java
     │   │   ├── ExpenseController.java
-    │   │   ├── CategoryController.java      ✅ NEW
-    │   │   └── AccountController.java       ✅ NEW
+    │   │   ├── CategoryController.java
+    │   │   └── AccountController.java
     │   ├── dto/
     │   │   ├── UserDTO.java
-    │   │   ├── ExpenseDTO.java              ✅ UPDATED (added categoryId, accountId, categoryName, accountName)
-    │   │   ├── CategoryDTO.java             ✅ NEW
-    │   │   └── AccountDTO.java              ✅ NEW
+    │   │   ├── ExpenseDTO.java
+    │   │   ├── CategoryDTO.java
+    │   │   └── AccountDTO.java
     │   ├── model/
     │   │   ├── User.java
-    │   │   ├── Expense.java                 ✅ UPDATED (added categoryId, accountId)
-    │   │   ├── Category.java                ✅ NEW
-    │   │   └── Account.java                 ✅ NEW
+    │   │   ├── Expense.java
+    │   │   ├── Category.java
+    │   │   └── Account.java
     │   ├── repository/
     │   │   ├── UserRepository.java
     │   │   ├── ExpenseRepository.java
-    │   │   ├── CategoryRepository.java      ✅ NEW
-    │   │   └── AccountRepository.java       ✅ NEW
+    │   │   ├── CategoryRepository.java
+    │   │   └── AccountRepository.java
     │   ├── security/
     │   │   ├── CustomUserDetailsService.java
     │   │   ├── JwtAuthenticationFilter.java
@@ -146,24 +154,30 @@ expensetracker/
     │   │   └── SecurityConfig.java
     │   └── service/
     │       ├── UserService.java
-    │       ├── ExpenseService.java          ✅ UPDATED (fetches category and account names)
-    │       ├── CategoryService.java         ✅ NEW
-    │       └── AccountService.java          ✅ NEW
+    │       ├── ExpenseService.java
+    │       ├── CategoryService.java
+    │       └── AccountService.java
     └── resources/
+        ├── db/                              ✅ NEW FOLDER
+        │   └── migration/                   ✅ NEW FOLDER
+        │       ├── V1__create_users_table.sql      ✅ NEW
+        │       ├── V2__create_categories_table.sql ✅ NEW
+        │       ├── V3__create_accounts_table.sql   ✅ NEW
+        │       └── V4__create_expenses_table.sql   ✅ NEW
         ├── static/
         │   ├── index.html
         │   ├── login.html
         │   ├── register.html
         │   ├── users.html
-        │   ├── expenses.html                ✅ UPDATED (added category and account dropdowns)
-        │   ├── categories.html              ✅ NEW
-        │   ├── accounts.html                ✅ NEW
-        │   ├── styles.css                   ✅ UPDATED (added category/account styles)
+        │   ├── expenses.html
+        │   ├── categories.html
+        │   ├── accounts.html
+        │   ├── styles.css
         │   └── js/
         │       ├── app.js
-        │       ├── auth.js                  ✅ UPDATED (stores userId in localStorage)
-        │       ├── expenses.js              ✅ UPDATED (loads categories and accounts, removed API_URL)
-        │       ├── categories.js            ✅ NEW
-        │       └── accounts.js              ✅ NEW
-        └── application.properties
+        │       ├── auth.js
+        │       ├── expenses.js
+        │       ├── categories.js
+        │       └── accounts.js
+        └── application.properties           ✅ UPDATED (Flyway enabled, ddl-auto changed to validate)
 ```

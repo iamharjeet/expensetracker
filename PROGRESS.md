@@ -22,8 +22,8 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [x] Step 9: Add Database Migrations (Essential) ✅
 - [x] Step 10: Enhanced Expense Management with Pagination & Filtering ✅
 - [x] Step 11: Budget Management (Minimal) ✅
-- [ ] Step 12: Improve Frontend - Dashboard & Charts
-- [ ] Step 13: Code Refactoring & Testing Foundation
+- [ ] Step 12: Improve Frontend - Dashboard & Charts (DEFERRED - Post-MVP)
+- [x] Step 13: Code Refactoring & Testing Foundation (Minimal - Exception Handling) ✅
 - [ ] Step 14: File Upload - Receipts (Local First)
 - [ ] Step 15: Reporting & Export with Testing
 - [ ] Step 16: Professional Email System
@@ -37,7 +37,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [ ] Step 24: CI/CD Pipeline
 - [ ] Step 25: Production Readiness & Documentation
 
-## Current Step: 12
+## Current Step: 14
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -121,6 +121,18 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - Updated styles.css with budget styling (color-coded borders, pulse animation for over-budget badge)
 - Updated users.html navigation to include Budgets link
 - Successfully tested budget tracking with spent calculation from expenses and over-budget warnings
+- Step 12: DEFERRED to Post-MVP (Dashboard & Charts) - Skipped to focus on backend engineering and cloud deployment
+- Step 13 completed: Implemented professional exception handling framework
+- Created exception package (com.harjeet.expensetracker.exception) with 3 new classes: ResourceNotFoundException.java, BadRequestException.java, and ErrorResponse.java
+- Created GlobalExceptionHandler.java with @ControllerAdvice for centralized exception handling across all controllers
+- Implemented 3 exception handlers: ResourceNotFoundException (404), BadRequestException (400), and generic Exception (500)
+- All exception handlers return consistent JSON error responses with timestamp, status, error type, message, and request path
+- Added spring-boot-starter-test dependency (includes JUnit 5, Mockito, AssertJ) for future testing capability
+- Updated UserService.java to throw ResourceNotFoundException in getUserById(), updateUser(), and deleteUser() methods
+- Successfully tested exception handling with Postman, verified proper 404 JSON responses for non-existent users
+- Comprehensive test writing deferred to post-deployment phase to meet project deadline
+
+
 
 ## Current Project Structure:
 ```
@@ -142,39 +154,44 @@ expensetracker/
     │   │   └── DataInitializer.java
     │   ├── controller/
     │   │   ├── UserController.java
-    │   │   ├── ExpenseController.java        ✅ UPDATED (added paginated endpoint)
+    │   │   ├── ExpenseController.java
     │   │   ├── CategoryController.java
     │   │   ├── AccountController.java
-    │   │   └── BudgetController.java         ✅ NEW
+    │   │   └── BudgetController.java
     │   ├── dto/
     │   │   ├── UserDTO.java
     │   │   ├── ExpenseDTO.java
     │   │   ├── CategoryDTO.java
     │   │   ├── AccountDTO.java
-    │   │   └── BudgetDTO.java                ✅ NEW
+    │   │   └── BudgetDTO.java
+    │   ├── exception/                        ✅ NEW
+    │   │   ├── ResourceNotFoundException.java ✅ NEW
+    │   │   ├── BadRequestException.java       ✅ NEW
+    │   │   ├── ErrorResponse.java             ✅ NEW
+    │   │   └── GlobalExceptionHandler.java    ✅ NEW
     │   ├── model/
     │   │   ├── User.java
     │   │   ├── Expense.java
     │   │   ├── Category.java
     │   │   ├── Account.java
-    │   │   └── Budget.java                   ✅ NEW
+    │   │   └── Budget.java
     │   ├── repository/
     │   │   ├── UserRepository.java
-    │   │   ├── ExpenseRepository.java         ✅ UPDATED (added native SQL query with filters)
+    │   │   ├── ExpenseRepository.java
     │   │   ├── CategoryRepository.java
     │   │   ├── AccountRepository.java
-    │   │   └── BudgetRepository.java          ✅ NEW
+    │   │   └── BudgetRepository.java
     │   ├── security/
     │   │   ├── CustomUserDetailsService.java
     │   │   ├── JwtAuthenticationFilter.java
     │   │   ├── JwtTokenProvider.java
     │   │   └── SecurityConfig.java
     │   └── service/
-    │       ├── UserService.java
-    │       ├── ExpenseService.java            ✅ UPDATED (added getExpensesWithFilters method)
+    │       ├── UserService.java              ✅ UPDATED (uses custom exceptions)
+    │       ├── ExpenseService.java
     │       ├── CategoryService.java
     │       ├── AccountService.java
-    │       └── BudgetService.java             ✅ NEW
+    │       └── BudgetService.java
     └── resources/
         ├── db/
         │   └── migration/
@@ -182,23 +199,23 @@ expensetracker/
         │       ├── V2__create_categories_table.sql
         │       ├── V3__create_accounts_table.sql
         │       ├── V4__create_expenses_table.sql
-        │       └── V5__create_budgets_table.sql  ✅ NEW
+        │       └── V5__create_budgets_table.sql
         ├── static/
         │   ├── index.html
         │   ├── login.html
         │   ├── register.html
-        │   ├── users.html                     ✅ UPDATED (added Budgets nav link)
-        │   ├── expenses.html                  ✅ UPDATED (added filters UI and pagination controls)
+        │   ├── users.html
+        │   ├── expenses.html
         │   ├── categories.html
         │   ├── accounts.html
-        │   ├── budgets.html                   ✅ NEW
-        │   ├── styles.css                     ✅ UPDATED (added budget styling)
+        │   ├── budgets.html
+        │   ├── styles.css
         │   └── js/
         │       ├── app.js
         │       ├── auth.js
-        │       ├── expenses.js                ✅ UPDATED (added pagination logic and filters)
+        │       ├── expenses.js
         │       ├── categories.js
         │       ├── accounts.js
-        │       └── budgets.js                 ✅ NEW
+        │       └── budgets.js
         └── application.properties
 ```

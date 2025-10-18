@@ -1,6 +1,7 @@
 package com.harjeet.expensetracker.service;
 
 import com.harjeet.expensetracker.dto.UserDTO;
+import com.harjeet.expensetracker.exception.ResourceNotFoundException;
 import com.harjeet.expensetracker.model.User;
 import com.harjeet.expensetracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class UserService {
     //Get a user by ID
     public UserDTO getUserById(Long id){
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User nor found with id: "+ id));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         return convertToDTO(user);
     }
 
@@ -43,7 +44,7 @@ public class UserService {
     //Update a User
     public UserDTO updateUser(Long id, UserDTO userDTO){
         User user = userRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("User not found with id: "+ id));
+                .orElseThrow(()-> new ResourceNotFoundException("User", "id", id));
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
 
@@ -54,7 +55,7 @@ public class UserService {
     //Delete a user
     public void deleteUser(Long id){
         if(!userRepository.existsById(id)){
-            throw new RuntimeException("User not found with id: "+ id);
+            throw new ResourceNotFoundException("User", "id", id);
         }
         userRepository.deleteById(id);
     }

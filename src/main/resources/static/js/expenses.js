@@ -3,6 +3,7 @@ let editingExpenseId = null;
 let currentUserId = null;
 let categories = [];
 let accounts = [];
+let expenseReceipts = {}; // NEW: Store receipt info for each expense
 
 // Pagination and filter state
 let currentPage = 0;
@@ -147,7 +148,7 @@ function populateFilterAccountDropdown() {
     });
 }
 
-// NEW: Load expenses with pagination and filters
+// Load expenses with pagination and filters
 function loadExpenses() {
     showLoading(true);
     const token = localStorage.getItem('token');
@@ -188,6 +189,8 @@ function loadExpenses() {
     })
     .then(data => {
         if (data && data.expenses) {
+            // Load receipts for all expenses
+            loadReceiptsForExpenses(data.expenses);
             displayExpenses(data.expenses);
             updatePaginationControls(data);
         } else {
@@ -202,6 +205,49 @@ function loadExpenses() {
         showMessage('Error loading expenses', 'error');
         showLoading(false);
     });
+}
+
+// NEW: Load receipts for all expenses
+function loadReceiptsForExpenses(expenses) {
+    const token = localStorage.getItem('token');
+    expenseReceipts = {}; // Reset
+
+    expenses.forEach(expense => {
+        fetch(`${API_URL}/receipts/expense/${expense.id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            return null;
+        })
+        .then(receipt => {
+            if (receipt) {
+                expenseReceipts[expense.id] = receipt;
+                updateReceiptCell(expense.id);
+            }
+        })
+        .catch(error => {
+            // Receipt not found is okay, just ignore
+        });
+    });
+}
+
+// NEW: Update receipt cell for a specific expense
+function updateReceiptCell(expenseId) {
+    const cell = document.getElementById(`receipt-${expenseId}`);
+    if (cell && expenseReceipts[expenseId]) {
+        const receipt = expenseReceipts[expenseId];
+        cell.innerHTML = `
+            <a href="#" onclick="downloadReceipt(${receipt.id}, '${receipt.filename}'); return false;"
+               style="color: #7c3aed; text-decoration: none;">
+                📎 ${receipt.filename}
+            </a>
+        `;
+    }
 }
 
 function displayExpenses(expenses) {
@@ -230,6 +276,9 @@ function displayExpenses(expenses) {
             <td>${expense.categoryName || '-'}</td>
             <td>${expense.accountName || '-'}</td>
             <td class="amount">$${parseFloat(expense.amount).toFixed(2)}</td>
+            <td id="receipt-${expense.id}">
+                <span style="color: #999;">No receipt</span>
+            </td>
             <td>
                 <button onclick="editExpense(${expense.id})" class="btn-edit">Edit</button>
                 <button onclick="deleteExpense(${expense.id})" class="btn-delete">Delete</button>
@@ -238,7 +287,7 @@ function displayExpenses(expenses) {
     `).join('');
 }
 
-// NEW: Update pagination controls
+// Update pagination controls
 function updatePaginationControls(data) {
     totalPages = data.totalPages;
     const paginationControls = document.getElementById('paginationControls');
@@ -261,7 +310,7 @@ function updatePaginationControls(data) {
     nextBtn.disabled = !data.hasNext;
 }
 
-// NEW: Apply filters
+// Apply filters
 function applyFilters() {
     filters.startDate = document.getElementById('filterStartDate').value || null;
     filters.endDate = document.getElementById('filterEndDate').value || null;
@@ -273,7 +322,7 @@ function applyFilters() {
     loadExpenses();
 }
 
-// NEW: Handle search with debounce
+// Handle search with debounce
 function handleSearchDebounced() {
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => {
@@ -283,7 +332,7 @@ function handleSearchDebounced() {
     }, 500); // Wait 500ms after user stops typing
 }
 
-// NEW: Clear all filters
+// Clear all filters
 function clearFilters() {
     document.getElementById('searchTerm').value = '';
     document.getElementById('filterStartDate').value = '';
@@ -303,7 +352,7 @@ function clearFilters() {
     loadExpenses();
 }
 
-// NEW: Go to next page
+// Go to next page
 function goToNextPage() {
     if (currentPage < totalPages - 1) {
         currentPage++;
@@ -311,7 +360,7 @@ function goToNextPage() {
     }
 }
 
-// NEW: Go to previous page
+// Go to previous page
 function goToPreviousPage() {
     if (currentPage > 0) {
         currentPage--;
@@ -324,7 +373,8 @@ function formatDate(dateString) {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-function handleSubmit(e) {
+// NEW: Updated handleSubmit to include receipt upload
+async function handleSubmit(e) {
     e.preventDefault();
 
     const categoryId = document.getElementById('categoryId').value;
@@ -340,42 +390,50 @@ function handleSubmit(e) {
     };
 
     if (editingExpenseId) {
-        updateExpense(editingExpenseId, expenseData);
+        await updateExpense(editingExpenseId, expenseData);
     } else {
-        createExpense(expenseData);
+        await createExpense(expenseData);
     }
 }
 
-function createExpense(expenseData) {
+// NEW: Updated createExpense to handle receipt upload
+async function createExpense(expenseData) {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/expenses`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(expenseData)
-    })
-    .then(response => {
+    try {
+        // First, create the expense
+        const response = await fetch(`${API_URL}/expenses`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(expenseData)
+        });
+
         if (response.status === 401 || response.status === 403) {
             logout();
             return;
         }
-        return response.json();
-    })
-    .then(data => {
+
+        const createdExpense = await response.json();
+
+        // Then, upload receipt if file is selected
+        const receiptFile = document.getElementById('receiptFile').files[0];
+        if (receiptFile) {
+            await uploadReceipt(createdExpense.id, receiptFile);
+        }
+
         showMessage('Expense created successfully!', 'success');
         resetForm();
         loadExpenses();
-        showLoading(false);
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error creating expense:', error);
         showMessage('Error creating expense', 'error');
+    } finally {
         showLoading(false);
-    });
+    }
 }
 
 function editExpense(id) {
@@ -396,11 +454,15 @@ function editExpense(id) {
     })
     .then(expense => {
         editingExpenseId = expense.id;
+        document.getElementById('expenseId').value = expense.id;
         document.getElementById('description').value = expense.description;
         document.getElementById('amount').value = expense.amount;
         document.getElementById('date').value = expense.date;
         document.getElementById('categoryId').value = expense.categoryId || '';
         document.getElementById('accountId').value = expense.accountId || '';
+
+        // Clear receipt file input (can't pre-populate file inputs for security)
+        document.getElementById('receiptFile').value = '';
 
         document.getElementById('formTitle').textContent = 'Edit Expense';
         document.getElementById('submitBtnText').textContent = 'Update Expense';
@@ -415,36 +477,44 @@ function editExpense(id) {
     });
 }
 
-function updateExpense(id, expenseData) {
+// NEW: Updated updateExpense to handle receipt upload
+async function updateExpense(id, expenseData) {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/expenses/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(expenseData)
-    })
-    .then(response => {
+    try {
+        // First, update the expense
+        const response = await fetch(`${API_URL}/expenses/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(expenseData)
+        });
+
         if (response.status === 401 || response.status === 403) {
             logout();
             return;
         }
-        return response.json();
-    })
-    .then(data => {
+
+        await response.json();
+
+        // Then, upload new receipt if file is selected
+        const receiptFile = document.getElementById('receiptFile').files[0];
+        if (receiptFile) {
+            await uploadReceipt(id, receiptFile);
+        }
+
         showMessage('Expense updated successfully!', 'success');
         resetForm();
         loadExpenses();
-        showLoading(false);
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error updating expense:', error);
         showMessage('Error updating expense', 'error');
+    } finally {
         showLoading(false);
-    });
+    }
 }
 
 function deleteExpense(id) {
@@ -477,6 +547,72 @@ function deleteExpense(id) {
     });
 }
 
+// NEW: Upload receipt function
+async function uploadReceipt(expenseId, file) {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('expenseId', expenseId);
+
+    try {
+        const response = await fetch(`${API_URL}/receipts/upload`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            logout();
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('Receipt upload failed');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error uploading receipt:', error);
+        showMessage('Error uploading receipt', 'error');
+        throw error;
+    }
+}
+
+// NEW: Download receipt function
+function downloadReceipt(receiptId, filename) {
+    const token = localStorage.getItem('token');
+
+    fetch(`${API_URL}/receipts/${receiptId}/download`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (response.status === 401 || response.status === 403) {
+            logout();
+            return;
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        // Create a download link and click it
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    })
+    .catch(error => {
+        console.error('Error downloading receipt:', error);
+        showMessage('Error downloading receipt', 'error');
+    });
+}
+
 function cancelEdit() {
     resetForm();
 }
@@ -484,6 +620,7 @@ function cancelEdit() {
 function resetForm() {
     editingExpenseId = null;
     document.getElementById('expenseForm').reset();
+    document.getElementById('expenseId').value = '';
     setDefaultDate();
     document.getElementById('formTitle').textContent = 'Add New Expense';
     document.getElementById('submitBtnText').textContent = 'Add Expense';

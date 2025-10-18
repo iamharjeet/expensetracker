@@ -28,6 +28,8 @@
         <div class="form-card">
             <h2 id="formTitle">Add New Expense</h2>
             <form id="expenseForm">
+                <input type="hidden" id="expenseId">
+
                 <div class="form-group">
                     <label for="description">Description *</label>
                     <input type="text" id="description" required placeholder="e.g., Grocery shopping">
@@ -54,6 +56,16 @@
                         <!-- Accounts will be loaded here -->
                     </select>
                 </div>
+
+                <!-- NEW: Receipt Upload Field -->
+                <div class="form-group">
+                    <label for="receiptFile">Receipt (Optional)</label>
+                    <input type="file" id="receiptFile" accept=".jpg,.jpeg,.png,.pdf">
+                    <small style="color: #666; font-size: 0.85em; display: block; margin-top: 5px;">
+                        Max 5MB. Allowed: JPG, PNG, PDF
+                    </small>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">
                         <span id="submitBtnText">Add Expense</span>
@@ -72,7 +84,7 @@
                 <span class="badge" id="expenseCount">0</span>
             </div>
 
-            <!-- NEW: Filters Section -->
+            <!-- Filters Section -->
             <div class="filters-section">
                 <div class="filters-row">
                     <div class="filter-group">
@@ -120,6 +132,7 @@
                         <th>Category</th>
                         <th>Account</th>
                         <th>Amount</th>
+                        <th>Receipt</th> <!-- NEW: Receipt Column -->
                         <th>Actions</th>
                     </tr>
                     </thead>
@@ -132,7 +145,7 @@
                 </div>
             </div>
 
-            <!-- NEW: Pagination Controls -->
+            <!-- Pagination Controls -->
             <div class="pagination-controls" id="paginationControls" style="display: none;">
                 <button class="btn-pagination" id="prevBtn" onclick="goToPreviousPage()" disabled>
                     ← Previous

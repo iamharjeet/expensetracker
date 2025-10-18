@@ -24,7 +24,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [x] Step 11: Budget Management (Minimal) ✅
 - [ ] Step 12: Improve Frontend - Dashboard & Charts (DEFERRED - Post-MVP)
 - [x] Step 13: Code Refactoring & Testing Foundation (Minimal - Exception Handling) ✅
-- [ ] Step 14: File Upload - Receipts (Local First)
+- [x] Step 14: File Upload - Receipts (Local First) ✅
 - [ ] Step 15: Reporting & Export with Testing
 - [ ] Step 16: Professional Email System
 - [ ] Step 17: API Documentation
@@ -37,7 +37,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [ ] Step 24: CI/CD Pipeline
 - [ ] Step 25: Production Readiness & Documentation
 
-## Current Step: 14
+## Current Step: 15
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -131,7 +131,15 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - Updated UserService.java to throw ResourceNotFoundException in getUserById(), updateUser(), and deleteUser() methods
 - Successfully tested exception handling with Postman, verified proper 404 JSON responses for non-existent users
 - Comprehensive test writing deferred to post-deployment phase to meet project deadline
-
+- Step 14 completed: Implemented receipt upload/download system with local file storage
+- Created Receipt entity, ReceiptRepository, ReceiptDTO, ReceiptService, ReceiptController
+- Created FileStorageService for local file storage in /uploads folder with validation (max 5MB, jpg/png/pdf only)
+- Created Flyway migration V6__create_receipts_table.sql with CASCADE delete
+- Implemented 3 REST endpoints: POST /api/receipts/upload, GET /api/receipts/{id}/download, GET /api/receipts/expense/{expenseId}
+- Updated expenses.html with file input field and Receipt column in table
+- Updated expenses.js with async upload/download logic and automatic receipt loading
+- Successfully tested complete flow: create/edit expenses with receipts, download receipts, file validation
+- 
 
 
 ## Current Project Structure:
@@ -141,6 +149,7 @@ expensetracker/
 ├── PROGRESS.md
 ├── README.md
 ├── pom.xml
+├── uploads/                                    ✅ NEW (created automatically)
 └── src/main/
     ├── java/com/harjeet/expensetracker/
     │   ├── ExpensetrackerApplication.java
@@ -157,41 +166,47 @@ expensetracker/
     │   │   ├── ExpenseController.java
     │   │   ├── CategoryController.java
     │   │   ├── AccountController.java
-    │   │   └── BudgetController.java
+    │   │   ├── BudgetController.java
+    │   │   └── ReceiptController.java           ✅ NEW
     │   ├── dto/
     │   │   ├── UserDTO.java
     │   │   ├── ExpenseDTO.java
     │   │   ├── CategoryDTO.java
     │   │   ├── AccountDTO.java
-    │   │   └── BudgetDTO.java
-    │   ├── exception/                        ✅ NEW
-    │   │   ├── ResourceNotFoundException.java ✅ NEW
-    │   │   ├── BadRequestException.java       ✅ NEW
-    │   │   ├── ErrorResponse.java             ✅ NEW
-    │   │   └── GlobalExceptionHandler.java    ✅ NEW
+    │   │   ├── BudgetDTO.java
+    │   │   └── ReceiptDTO.java                  ✅ NEW
+    │   ├── exception/
+    │   │   ├── ResourceNotFoundException.java
+    │   │   ├── BadRequestException.java
+    │   │   ├── ErrorResponse.java
+    │   │   └── GlobalExceptionHandler.java
     │   ├── model/
     │   │   ├── User.java
     │   │   ├── Expense.java
     │   │   ├── Category.java
     │   │   ├── Account.java
-    │   │   └── Budget.java
+    │   │   ├── Budget.java
+    │   │   └── Receipt.java                     ✅ NEW
     │   ├── repository/
     │   │   ├── UserRepository.java
     │   │   ├── ExpenseRepository.java
     │   │   ├── CategoryRepository.java
     │   │   ├── AccountRepository.java
-    │   │   └── BudgetRepository.java
+    │   │   ├── BudgetRepository.java
+    │   │   └── ReceiptRepository.java           ✅ NEW
     │   ├── security/
     │   │   ├── CustomUserDetailsService.java
     │   │   ├── JwtAuthenticationFilter.java
     │   │   ├── JwtTokenProvider.java
     │   │   └── SecurityConfig.java
     │   └── service/
-    │       ├── UserService.java              ✅ UPDATED (uses custom exceptions)
+    │       ├── UserService.java
     │       ├── ExpenseService.java
     │       ├── CategoryService.java
     │       ├── AccountService.java
-    │       └── BudgetService.java
+    │       ├── BudgetService.java
+    │       ├── FileStorageService.java          ✅ NEW
+    │       └── ReceiptService.java              ✅ NEW
     └── resources/
         ├── db/
         │   └── migration/
@@ -199,13 +214,14 @@ expensetracker/
         │       ├── V2__create_categories_table.sql
         │       ├── V3__create_accounts_table.sql
         │       ├── V4__create_expenses_table.sql
-        │       └── V5__create_budgets_table.sql
+        │       ├── V5__create_budgets_table.sql
+        │       └── V6__create_receipts_table.sql ✅ NEW
         ├── static/
         │   ├── index.html
         │   ├── login.html
         │   ├── register.html
         │   ├── users.html
-        │   ├── expenses.html
+        │   ├── expenses.html                     ✅ UPDATED
         │   ├── categories.html
         │   ├── accounts.html
         │   ├── budgets.html
@@ -213,7 +229,7 @@ expensetracker/
         │   └── js/
         │       ├── app.js
         │       ├── auth.js
-        │       ├── expenses.js
+        │       ├── expenses.js                   ✅ UPDATED
         │       ├── categories.js
         │       ├── accounts.js
         │       └── budgets.js

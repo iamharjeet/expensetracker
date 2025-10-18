@@ -4,6 +4,21 @@ let currentUserId = null;
 let categories = [];
 let accounts = [];
 
+// Pagination and filter state
+let currentPage = 0;
+let totalPages = 0;
+let pageSize = 10;
+let filters = {
+    startDate: null,
+    endDate: null,
+    categoryId: null,
+    accountId: null,
+    searchTerm: null
+};
+
+// Debounce timer for search
+let searchDebounceTimer = null;
+
 // Check authentication on page load
 document.addEventListener('DOMContentLoaded', function() {
     if (!isAuthenticated()) {
@@ -52,6 +67,7 @@ function loadCategories() {
     .then(data => {
         categories = data;
         populateCategoryDropdown();
+        populateFilterCategoryDropdown();
     })
     .catch(error => {
         console.error('Error loading categories:', error);
@@ -67,6 +83,18 @@ function populateCategoryDropdown() {
         option.value = category.id;
         option.textContent = `${category.name} (${category.type})`;
         categorySelect.appendChild(option);
+    });
+}
+
+function populateFilterCategoryDropdown() {
+    const filterCategorySelect = document.getElementById('filterCategoryId');
+    filterCategorySelect.innerHTML = '<option value="">All Categories</option>';
+
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = `${category.name} (${category.type})`;
+        filterCategorySelect.appendChild(option);
     });
 }
 
@@ -88,6 +116,7 @@ function loadAccounts() {
     .then(data => {
         accounts = data;
         populateAccountDropdown();
+        populateFilterAccountDropdown();
     })
     .catch(error => {
         console.error('Error loading accounts:', error);
@@ -106,11 +135,43 @@ function populateAccountDropdown() {
     });
 }
 
+function populateFilterAccountDropdown() {
+    const filterAccountSelect = document.getElementById('filterAccountId');
+    filterAccountSelect.innerHTML = '<option value="">All Accounts</option>';
+
+    accounts.forEach(account => {
+        const option = document.createElement('option');
+        option.value = account.id;
+        option.textContent = `${account.name} (${account.type})`;
+        filterAccountSelect.appendChild(option);
+    });
+}
+
+// NEW: Load expenses with pagination and filters
 function loadExpenses() {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/expenses/user/${currentUserId}`, {
+    // Build query parameters
+    let queryParams = `page=${currentPage}&size=${pageSize}`;
+
+    if (filters.startDate) {
+        queryParams += `&startDate=${filters.startDate}`;
+    }
+    if (filters.endDate) {
+        queryParams += `&endDate=${filters.endDate}`;
+    }
+    if (filters.categoryId) {
+        queryParams += `&categoryId=${filters.categoryId}`;
+    }
+    if (filters.accountId) {
+        queryParams += `&accountId=${filters.accountId}`;
+    }
+    if (filters.searchTerm) {
+        queryParams += `&searchTerm=${encodeURIComponent(filters.searchTerm)}`;
+    }
+
+    fetch(`${API_URL}/expenses/user/${currentUserId}/paginated?${queryParams}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -120,10 +181,20 @@ function loadExpenses() {
             logout();
             return;
         }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         return response.json();
     })
     .then(data => {
-        displayExpenses(data);
+        if (data && data.expenses) {
+            displayExpenses(data.expenses);
+            updatePaginationControls(data);
+        } else {
+            console.error('Invalid response structure:', data);
+            displayExpenses([]);
+            updatePaginationControls({ totalPages: 0, currentPage: 0, hasNext: false, hasPrevious: false });
+        }
         showLoading(false);
     })
     .catch(error => {
@@ -137,6 +208,11 @@ function displayExpenses(expenses) {
     const tbody = document.getElementById('expensesTableBody');
     const emptyState = document.getElementById('emptyState');
     const expenseCount = document.getElementById('expenseCount');
+
+    // Handle undefined or null expenses
+    if (!expenses || !Array.isArray(expenses)) {
+        expenses = [];
+    }
 
     expenseCount.textContent = expenses.length;
 
@@ -160,6 +236,87 @@ function displayExpenses(expenses) {
             </td>
         </tr>
     `).join('');
+}
+
+// NEW: Update pagination controls
+function updatePaginationControls(data) {
+    totalPages = data.totalPages;
+    const paginationControls = document.getElementById('paginationControls');
+    const pageInfo = document.getElementById('pageInfo');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    // Show/hide pagination controls
+    if (totalPages > 1) {
+        paginationControls.style.display = 'flex';
+    } else {
+        paginationControls.style.display = 'none';
+    }
+
+    // Update page info
+    pageInfo.textContent = `Page ${data.currentPage + 1} of ${totalPages}`;
+
+    // Enable/disable buttons
+    prevBtn.disabled = !data.hasPrevious;
+    nextBtn.disabled = !data.hasNext;
+}
+
+// NEW: Apply filters
+function applyFilters() {
+    filters.startDate = document.getElementById('filterStartDate').value || null;
+    filters.endDate = document.getElementById('filterEndDate').value || null;
+    filters.categoryId = document.getElementById('filterCategoryId').value || null;
+    filters.accountId = document.getElementById('filterAccountId').value || null;
+
+    // Reset to first page when filters change
+    currentPage = 0;
+    loadExpenses();
+}
+
+// NEW: Handle search with debounce
+function handleSearchDebounced() {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+        filters.searchTerm = document.getElementById('searchTerm').value.trim() || null;
+        currentPage = 0;
+        loadExpenses();
+    }, 500); // Wait 500ms after user stops typing
+}
+
+// NEW: Clear all filters
+function clearFilters() {
+    document.getElementById('searchTerm').value = '';
+    document.getElementById('filterStartDate').value = '';
+    document.getElementById('filterEndDate').value = '';
+    document.getElementById('filterCategoryId').value = '';
+    document.getElementById('filterAccountId').value = '';
+
+    filters = {
+        startDate: null,
+        endDate: null,
+        categoryId: null,
+        accountId: null,
+        searchTerm: null
+    };
+
+    currentPage = 0;
+    loadExpenses();
+}
+
+// NEW: Go to next page
+function goToNextPage() {
+    if (currentPage < totalPages - 1) {
+        currentPage++;
+        loadExpenses();
+    }
+}
+
+// NEW: Go to previous page
+function goToPreviousPage() {
+    if (currentPage > 0) {
+        currentPage--;
+        loadExpenses();
+    }
 }
 
 function formatDate(dateString) {

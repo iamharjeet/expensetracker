@@ -3,11 +3,14 @@ package com.harjeet.expensetracker.controller;
 import com.harjeet.expensetracker.dto.ExpenseDTO;
 import com.harjeet.expensetracker.service.ExpenseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/expenses")
@@ -36,6 +39,24 @@ public class ExpenseController {
     public ResponseEntity<List<ExpenseDTO>> getExpensesByUserId(@PathVariable Long userId){
         List<ExpenseDTO> expenses = expenseService.getExpensesByUserId(userId);
         return ResponseEntity.ok(expenses);
+    }
+
+    //NEW: GET paginated and filtered expenses for a specific user
+    @GetMapping("/user/{userId}/paginated")
+    public ResponseEntity<Map<String, Object>> getExpensesWithFilters(
+            @PathVariable Long userId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) String searchTerm,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Map<String, Object> response = expenseService.getExpensesWithFilters(
+                userId, startDate, endDate, categoryId, accountId, searchTerm, page, size
+        );
+        return ResponseEntity.ok(response);
     }
 
     //POST create a new expense

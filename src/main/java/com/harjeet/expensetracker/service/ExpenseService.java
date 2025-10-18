@@ -8,9 +8,16 @@ import com.harjeet.expensetracker.repository.CategoryRepository;
 import com.harjeet.expensetracker.repository.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +52,43 @@ public class ExpenseService {
         return expenseRepository.findByUserIdOrderByDateDesc(userId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    //NEW: Get paginated and filtered expenses for a specific user
+    public Map<String, Object> getExpensesWithFilters(
+            Long userId,
+            LocalDate startDate,
+            LocalDate endDate,
+            Long categoryId,
+            Long accountId,
+            String searchTerm,
+            int page,
+            int size
+    ) {
+        // Create pageable object with sorting by date descending
+        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
+
+        // Get paginated results from repository
+        Page<Expense> expensePage = expenseRepository.findByUserIdWithFilters(
+                userId, startDate, endDate, categoryId, accountId,searchTerm, pageable
+        );
+
+        // Convert expenses to DTOs
+        List<ExpenseDTO> expenseDTOs = expensePage.getContent().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        // Build response with pagination metadata
+        Map<String, Object> response = new HashMap<>();
+        response.put("expenses", expenseDTOs);
+        response.put("currentPage", expensePage.getNumber());
+        response.put("totalPages", expensePage.getTotalPages());
+        response.put("totalItems", expensePage.getTotalElements());
+        response.put("pageSize", expensePage.getSize());
+        response.put("hasNext", expensePage.hasNext());
+        response.put("hasPrevious", expensePage.hasPrevious());
+
+        return response;
     }
 
     //Create a new expense

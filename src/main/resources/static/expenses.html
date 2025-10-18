@@ -65,12 +65,52 @@
             </form>
         </div>
 
-        <!-- Right Column: Expenses List -->
+        <!-- Right Column: Expenses List with Filters -->
         <div class="list-card">
             <div class="list-header">
                 <h2>Expenses List</h2>
                 <span class="badge" id="expenseCount">0</span>
             </div>
+
+            <!-- NEW: Filters Section -->
+            <div class="filters-section">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="searchTerm">Search</label>
+                        <input type="text" id="searchTerm" placeholder="Search description..." onkeyup="handleSearchDebounced()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterStartDate">Start Date</label>
+                        <input type="date" id="filterStartDate" onchange="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterEndDate">End Date</label>
+                        <input type="date" id="filterEndDate" onchange="applyFilters()">
+                    </div>
+                </div>
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="filterCategoryId">Category</label>
+                        <select id="filterCategoryId" onchange="applyFilters()">
+                            <option value="">All Categories</option>
+                            <!-- Categories will be loaded here -->
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterAccountId">Account</label>
+                        <select id="filterAccountId" onchange="applyFilters()">
+                            <option value="">All Accounts</option>
+                            <!-- Accounts will be loaded here -->
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button type="button" class="btn-secondary" onclick="clearFilters()" style="margin-top: 24px;">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="table-container">
                 <table id="expensesTable">
                     <thead>
@@ -88,8 +128,19 @@
                     </tbody>
                 </table>
                 <div id="emptyState" class="empty-state" style="display: none;">
-                    <p>No expenses yet. Add your first expense!</p>
+                    <p>No expenses found. Try adjusting your filters or add a new expense!</p>
                 </div>
+            </div>
+
+            <!-- NEW: Pagination Controls -->
+            <div class="pagination-controls" id="paginationControls" style="display: none;">
+                <button class="btn-pagination" id="prevBtn" onclick="goToPreviousPage()" disabled>
+                    ← Previous
+                </button>
+                <span class="page-info" id="pageInfo">Page 1 of 1</span>
+                <button class="btn-pagination" id="nextBtn" onclick="goToNextPage()" disabled>
+                    Next →
+                </button>
             </div>
         </div>
     </div>

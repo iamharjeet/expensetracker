@@ -21,7 +21,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [x] Step 8: Enhance Data Model - Categories & Accounts ✅
 - [x] Step 9: Add Database Migrations (Essential) ✅
 - [x] Step 10: Enhanced Expense Management with Pagination & Filtering ✅
-- [ ] Step 11: Budget Management (Basic)
+- [x] Step 11: Budget Management (Minimal) ✅
 - [ ] Step 12: Improve Frontend - Dashboard & Charts
 - [ ] Step 13: Code Refactoring & Testing Foundation
 - [ ] Step 14: File Upload - Receipts (Local First)
@@ -37,7 +37,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [ ] Step 24: CI/CD Pipeline
 - [ ] Step 25: Production Readiness & Documentation
 
-## Current Step: 8
+## Current Step: 12
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -113,6 +113,14 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - and ExpenseController.java with new GET /api/expenses/user/{userId}/paginated endpoint. Enhanced expenses.html with filters section (date pickers, category/account dropdowns, search box, clear filters button) and pagination controls (Previous/Next buttons, page info display). Updated expenses.js with pagination state management, 
 - debounced search (500ms delay), applyFilters, clearFilters, goToNextPage, and goToPreviousPage functions. Enhanced styles.css with filters section styling, pagination controls styling, and responsive design for mobile. Successfully tested all features: pagination navigation, individual filters, combined filters, search functionality, 
 - clear filters, and CRUD operations with pagination. No new files or folders were created; only existing files were modified.
+  Step 11 completed: Implemented minimal budget management system
+- Created Budget entity with Flyway migration V5__create_budgets_table.sql
+- Created BudgetRepository, BudgetDTO, BudgetService with calculateSpent() method, BudgetController (6 endpoints)
+- Created budgets.html and budgets.js with CRUD operations and over-budget detection
+- Updated styles.css with budget styling (color-coded borders, pulse animation for over-budget badge)
+- Updated users.html navigation to include Budgets link
+- Successfully tested budget tracking with spent calculation from expenses and over-budget warnings
+
 ## Current Project Structure:
 ```
 expensetracker/
@@ -135,22 +143,26 @@ expensetracker/
     │   │   ├── UserController.java
     │   │   ├── ExpenseController.java        ✅ UPDATED (added paginated endpoint)
     │   │   ├── CategoryController.java
-    │   │   └── AccountController.java
+    │   │   ├── AccountController.java
+    │   │   └── BudgetController.java         ✅ NEW
     │   ├── dto/
     │   │   ├── UserDTO.java
     │   │   ├── ExpenseDTO.java
     │   │   ├── CategoryDTO.java
-    │   │   └── AccountDTO.java
+    │   │   ├── AccountDTO.java
+    │   │   └── BudgetDTO.java                ✅ NEW
     │   ├── model/
     │   │   ├── User.java
     │   │   ├── Expense.java
     │   │   ├── Category.java
-    │   │   └── Account.java
+    │   │   ├── Account.java
+    │   │   └── Budget.java                   ✅ NEW
     │   ├── repository/
     │   │   ├── UserRepository.java
     │   │   ├── ExpenseRepository.java         ✅ UPDATED (added native SQL query with filters)
     │   │   ├── CategoryRepository.java
-    │   │   └── AccountRepository.java
+    │   │   ├── AccountRepository.java
+    │   │   └── BudgetRepository.java          ✅ NEW
     │   ├── security/
     │   │   ├── CustomUserDetailsService.java
     │   │   ├── JwtAuthenticationFilter.java
@@ -160,28 +172,32 @@ expensetracker/
     │       ├── UserService.java
     │       ├── ExpenseService.java            ✅ UPDATED (added getExpensesWithFilters method)
     │       ├── CategoryService.java
-    │       └── AccountService.java
+    │       ├── AccountService.java
+    │       └── BudgetService.java             ✅ NEW
     └── resources/
         ├── db/
         │   └── migration/
         │       ├── V1__create_users_table.sql
         │       ├── V2__create_categories_table.sql
         │       ├── V3__create_accounts_table.sql
-        │       └── V4__create_expenses_table.sql
+        │       ├── V4__create_expenses_table.sql
+        │       └── V5__create_budgets_table.sql  ✅ NEW
         ├── static/
         │   ├── index.html
         │   ├── login.html
         │   ├── register.html
-        │   ├── users.html
+        │   ├── users.html                     ✅ UPDATED (added Budgets nav link)
         │   ├── expenses.html                  ✅ UPDATED (added filters UI and pagination controls)
         │   ├── categories.html
         │   ├── accounts.html
-        │   ├── styles.css                     ✅ UPDATED (added filter and pagination styling)
+        │   ├── budgets.html                   ✅ NEW
+        │   ├── styles.css                     ✅ UPDATED (added budget styling)
         │   └── js/
         │       ├── app.js
         │       ├── auth.js
         │       ├── expenses.js                ✅ UPDATED (added pagination logic and filters)
         │       ├── categories.js
-        │       └── accounts.js
+        │       ├── accounts.js
+        │       └── budgets.js                 ✅ NEW
         └── application.properties
 ```

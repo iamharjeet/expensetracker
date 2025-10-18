@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Management - Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- User Info Bar -->
+<div class="user-info-bar">
+    <div class="user-info-content">
+        <span id="userWelcome">Loading...</span>
+        <button onclick="logout()" class="btn-logout">Logout</button>
+    </div>
+</div>
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">💰 Expense Tracker</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="users.html">Users</a>
+            <a href="categories.html">Categories</a>
+            <a href="accounts.html">Accounts</a>
+            <a href="expenses.html">Expenses</a>
+            <a href="budgets.html" class="active">Budgets</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1>💵 Budget Management</h1>
+
+    <!-- Two Column Layout -->
+    <div class="two-column-layout">
+        <!-- Left Column: Form -->
+        <div class="form-card">
+            <h2 id="formTitle">Add New Budget</h2>
+            <form id="budgetForm">
+                <input type="hidden" id="budgetId">
+
+                <div class="form-group">
+                    <label for="categoryId">Category:</label>
+                    <select id="categoryId" required>
+                        <option value="">Select Category</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="monthlyLimit">Monthly Limit ($):</label>
+                    <input type="number" id="monthlyLimit" step="0.01" min="0" placeholder="e.g., 500.00" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="month">Month:</label>
+                    <select id="month" required>
+                        <option value="">Select Month</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="year">Year:</label>
+                    <input type="number" id="year" min="2020" max="2100" placeholder="e.g., 2024" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Add Budget</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancel</button>
+                </div>
+            </form>
+
+            <!-- Messages -->
+            <div id="message" class="message" style="display: none;"></div>
+        </div>
+
+        <!-- Right Column: Budget List -->
+        <div class="list-card">
+            <div class="list-header">
+                <h2>Your Budgets <span class="badge" id="budgetCount">0</span></h2>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="spinner" style="display: none;">Loading budgets...</div>
+
+            <!-- Budget List -->
+            <div id="budgetList" class="budget-list"></div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <p>📊 No budgets yet!</p>
+                <p>Create your first budget to start tracking your spending.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/budgets.js"></script>
+<script>
+    // Protect this page - redirect to login if not authenticated
+    protectPage();
+
+    // Display current user
+    const user = getCurrentUser();
+    if (user && user.username) {
+        document.getElementById('userWelcome').textContent = `Welcome, ${user.username}!`;
+    }
+</script>
+</body>
+</html>

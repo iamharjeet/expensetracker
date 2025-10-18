@@ -945,3 +945,131 @@ select:focus {
         justify-content: center;
     }
 }
+
+/* ========================================
+   BUDGET STYLES
+   ======================================== */
+
+.budget-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.budget-item {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.budget-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.budget-item.over-budget {
+    border-color: #ff4444;
+    background: #fff5f5;
+}
+
+.budget-item.on-budget {
+    border-color: #4CAF50;
+    background: #f9fff9;
+}
+
+.budget-info {
+    flex: 1;
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.budget-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
+}
+
+.budget-period {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.budget-amounts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.spent-info, .remaining-info {
+    font-size: 0.95rem;
+}
+
+.text-danger {
+    color: #ff4444;
+}
+
+.text-success {
+    color: #4CAF50;
+}
+
+.over-budget-badge {
+    background: #ff4444;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 0.5rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.budget-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Responsive Design for Budgets */
+@media (max-width: 768px) {
+    .budget-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .budget-actions {
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    .budget-actions button {
+        flex: 1;
+    }
+
+    .budget-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

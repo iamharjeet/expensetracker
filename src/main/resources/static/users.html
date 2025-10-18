@@ -7,24 +7,38 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="container">
-    <!-- Header with User Info and Logout -->
-    <div class="user-info">
-        <span>Logged in as: <strong id="currentUsername"></strong></span>
-        <div>
-            <a href="expenses.html" class="btn btn-secondary" style="text-decoration: none;">Expenses</a>
-            <button onclick="logout()" class="btn btn-logout">Logout</button>
+<!-- User Info Bar -->
+<div class="user-info-bar">
+    <div class="user-info-content">
+        <span id="userWelcome">Loading...</span>
+        <button onclick="logout()" class="btn-logout">Logout</button>
+    </div>
+</div>
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">💰 Expense Tracker</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="users.html" class="active">Users</a>
+            <a href="categories.html">Categories</a>
+            <a href="accounts.html">Accounts</a>
+            <a href="expenses.html">Expenses</a>
+            <a href="budgets.html">Budgets</a>
         </div>
     </div>
+</nav>
 
-    <h1>User Management</h1>
+<div class="container">
+    <h1>👥 User Management</h1>
 
-    <div id="message" class="message"></div>
+    <div id="message" class="message" style="display: none;"></div>
     <div id="loading" class="spinner" style="display: none;"></div>
 
     <div class="two-column-layout">
         <!-- Left Column: Add/Edit User Form -->
-        <div class="card">
+        <div class="form-card">
             <h2 id="formTitle">Add New User</h2>
             <form id="userForm">
                 <input type="hidden" id="userId">
@@ -54,14 +68,14 @@
         </div>
 
         <!-- Right Column: Users List -->
-        <div class="card">
-            <div class="card-header">
-                <h2>All Users</h2>
-                <span class="badge" id="userCount">0</span>
+        <div class="list-card">
+            <div class="list-header">
+                <h2>All Users <span class="badge" id="userCount">0</span></h2>
             </div>
 
-            <div id="emptyState" class="empty-state">
-                <p>No users found. Add your first user!</p>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <p>👤 No users found!</p>
+                <p>Add your first user to get started.</p>
             </div>
 
             <table id="usersTable" style="display: none;">
@@ -87,7 +101,9 @@
 
     // Display current user
     const user = getCurrentUser();
-    document.getElementById('currentUsername').textContent = user.username;
+    if (user && user.username) {
+        document.getElementById('userWelcome').textContent = `Welcome, ${user.username}!`;
+    }
 
     // Load users on page load
     loadUsers();

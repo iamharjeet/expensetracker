@@ -112,10 +112,11 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - date range filtering (startDate, endDate), category and account filtering, and case-insensitive description search using COALESCE for null handling. Updated ExpenseService.java with getExpensesWithFilters method returning paginated response with metadata (currentPage, totalPages, totalItems, hasNext, hasPrevious), 
 - and ExpenseController.java with new GET /api/expenses/user/{userId}/paginated endpoint. Enhanced expenses.html with filters section (date pickers, category/account dropdowns, search box, clear filters button) and pagination controls (Previous/Next buttons, page info display). Updated expenses.js with pagination state management, 
 - debounced search (500ms delay), applyFilters, clearFilters, goToNextPage, and goToPreviousPage functions. Enhanced styles.css with filters section styling, pagination controls styling, and responsive design for mobile. Successfully tested all features: pagination navigation, individual filters, combined filters, search functionality, 
-- clear filters, and CRUD operations with pagination. No new files or folders were created; only existing files were modified.
-  Step 11 completed: Implemented minimal budget management system
+- clear filters, and CRUD operations with pagination. No new files or folders were created; only existing files were modified. 
+- Step 11 completed: Implemented minimal budget management system
 - Created Budget entity with Flyway migration V5__create_budgets_table.sql
 - Created BudgetRepository, BudgetDTO, BudgetService with calculateSpent() method, BudgetController (6 endpoints)
+- Implemented 6 REST endpoints: GET /api/budgets/user/{userId}, GET /api/budgets/user/{userId}/month/{month}/year/{year}, GET /api/budgets/{id}, POST /api/budgets, PUT /api/budgets/{id}, DELETE /api/budgets/{id}
 - Created budgets.html and budgets.js with CRUD operations and over-budget detection
 - Updated styles.css with budget styling (color-coded borders, pulse animation for over-budget badge)
 - Updated users.html navigation to include Budgets link

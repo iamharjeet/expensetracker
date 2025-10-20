@@ -26,8 +26,8 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [x] Step 13: Code Refactoring & Testing Foundation (Minimal - Exception Handling) ✅
 - [x] Step 14: File Upload - Receipts (Local First) ✅
 - [x] Step 15: Reporting & Export with Testing ✅
-- [ ] Step 16: Professional Email System
-- [ ] Step 17: API Documentation
+- [ ] Step 16: Professional Email System (DEFERRED - Post-MVP)
+- [x] Step 17: API Documentation (MINIMAL) ✅
 - [ ] Step 18: Integration Testing & Test Coverage
 - [ ] Step 19: AWS S3 Integration (Replace Local Storage)
 - [ ] Step 20: Dockerize the Application
@@ -37,7 +37,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [ ] Step 24: CI/CD Pipeline
 - [ ] Step 25: Production Readiness & Documentation
 
-## Current Step: 16
+## Current Step: 18
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -148,7 +148,17 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - Enhanced styles.css with summary cards, category table, and responsive design
 - Updated navigation in all pages (users.html, expenses.html, categories.html, accounts.html, budgets.html)
 - Successfully tested monthly summary with income/expense calculations and top 5 categories ranking
-- Successfully tested CSV export with proper formatting and date range filtering
+- Successfully tested CSV export with proper formatting and date range filtering 
+- Step 16: DEFERRED to Post-MVP (Dashboard & Charts) - Skipped to focus on backend engineering and cloud deployment
+- Step 17 completed: Implemented professional API documentation using Springdoc OpenAPI
+- Added springdoc-openapi-starter-webmvc-ui dependency (version 2.7.0) to pom.xml
+- Created OpenApiConfig.java in config package with JWT bearer authentication configuration
+- Updated SecurityConfig.java to permit Swagger UI endpoints
+- Configured Swagger UI in application.properties with custom paths and settings
+- Interactive API documentation accessible at http://localhost:8080/swagger-ui.html
+- All 8 controllers auto-documented with request/response schemas
+- JWT authentication working via Authorize button in Swagger UI
+- Successfully tested protected endpoints from Swagger interface
 
 
 ## Current Project Structure:
@@ -169,7 +179,8 @@ expensetracker/
     │   │   ├── LoginResponse.java
     │   │   └── RegisterRequest.java
     │   ├── config/
-    │   │   └── DataInitializer.java
+    │   │   ├── DataInitializer.java
+    │   │   └── OpenApiConfig.java              ✅ NEW
     │   ├── controller/
     │   │   ├── UserController.java
     │   │   ├── ExpenseController.java
@@ -177,7 +188,7 @@ expensetracker/
     │   │   ├── AccountController.java
     │   │   ├── BudgetController.java
     │   │   ├── ReceiptController.java
-    │   │   └── ReportController.java           ✅ NEW
+    │   │   └── ReportController.java
     │   ├── dto/
     │   │   ├── UserDTO.java
     │   │   ├── ExpenseDTO.java
@@ -199,7 +210,7 @@ expensetracker/
     │   │   └── Receipt.java
     │   ├── repository/
     │   │   ├── UserRepository.java
-    │   │   ├── ExpenseRepository.java          ✅ UPDATED
+    │   │   ├── ExpenseRepository.java
     │   │   ├── CategoryRepository.java
     │   │   ├── AccountRepository.java
     │   │   ├── BudgetRepository.java
@@ -208,7 +219,7 @@ expensetracker/
     │   │   ├── CustomUserDetailsService.java
     │   │   ├── JwtAuthenticationFilter.java
     │   │   ├── JwtTokenProvider.java
-    │   │   └── SecurityConfig.java
+    │   │   └── SecurityConfig.java             ✅ UPDATED
     │   └── service/
     │       ├── UserService.java
     │       ├── ExpenseService.java
@@ -217,7 +228,7 @@ expensetracker/
     │       ├── BudgetService.java
     │       ├── FileStorageService.java
     │       ├── ReceiptService.java
-    │       └── ReportService.java              ✅ NEW
+    │       └── ReportService.java
     └── resources/
         ├── db/
         │   └── migration/
@@ -231,13 +242,13 @@ expensetracker/
         │   ├── index.html
         │   ├── login.html
         │   ├── register.html
-        │   ├── users.html                      ✅ UPDATED
-        │   ├── expenses.html                   ✅ UPDATED
-        │   ├── categories.html                 ✅ UPDATED
-        │   ├── accounts.html                   ✅ UPDATED
-        │   ├── budgets.html                    ✅ UPDATED
-        │   ├── reports.html                    ✅ NEW
-        │   ├── styles.css                      ✅ UPDATED
+        │   ├── users.html
+        │   ├── expenses.html
+        │   ├── categories.html
+        │   ├── accounts.html
+        │   ├── budgets.html
+        │   ├── reports.html
+        │   ├── styles.css
         │   └── js/
         │       ├── app.js
         │       ├── auth.js
@@ -245,6 +256,6 @@ expensetracker/
         │       ├── categories.js
         │       ├── accounts.js
         │       ├── budgets.js
-        │       └── reports.js                  ✅ NEW
-        └── application.properties
+        │       └── reports.js
+        └── application.properties              ✅ UPDATED
 ```

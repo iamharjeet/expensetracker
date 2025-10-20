@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/api/auth/**").permitAll() // Allow registration and login
                         .requestMatchers("/", "index.html", "login.html", "register.html", "/styles.css", "/js/**").permitAll() // Allow static pages
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/api-docs/**").permitAll() // Allow Swagger UI
                         .requestMatchers("/api/**").authenticated() // protect all other api endpoints
                         .anyRequest().permitAll()
                 ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

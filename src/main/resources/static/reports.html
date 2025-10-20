@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <!-- User Info Bar -->
+    <div class="user-info-bar">
+        <div class="user-welcome">
+            <span id="userWelcome">Welcome, User!</span>
+        </div>
+        <div class="user-actions">
+            <button onclick="logout()" class="btn-logout">Logout</button>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="users.html">Users</a>
+        <a href="expenses.html">Expenses</a>
+        <a href="categories.html">Categories</a>
+        <a href="accounts.html">Accounts</a>
+        <a href="budgets.html">Budgets</a>
+        <a href="reports.html" class="active">Reports</a>
+    </div>
+
+    <h1>Financial Reports</h1>
+
+    <!-- Monthly Summary Section -->
+    <div class="card">
+        <h2>Monthly Summary</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="summaryMonth">Month:</label>
+                <select id="summaryMonth" class="form-control">
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="summaryYear">Year:</label>
+                <input type="number" id="summaryYear" class="form-control" min="2020" max="2030" value="2024">
+            </div>
+            <div class="form-group">
+                <button onclick="loadMonthlySummary()" class="btn-primary">Get Summary</button>
+            </div>
+        </div>
+
+        <!-- Summary Display -->
+        <div id="summaryDisplay" style="display: none; margin-top: 20px;">
+            <div class="summary-cards">
+                <div class="summary-card income-card">
+                    <h3>Total Income</h3>
+                    <p class="summary-amount" id="totalIncome">$0.00</p>
+                </div>
+                <div class="summary-card expense-card">
+                    <h3>Total Expenses</h3>
+                    <p class="summary-amount" id="totalExpenses">$0.00</p>
+                </div>
+                <div class="summary-card balance-card">
+                    <h3>Net Balance</h3>
+                    <p class="summary-amount" id="netBalance">$0.00</p>
+                </div>
+            </div>
+
+            <!-- Top Spending Categories -->
+            <div class="top-categories" style="margin-top: 20px;">
+                <h3>Top Spending Categories</h3>
+                <div id="topCategoriesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Export Section -->
+    <div class="card" style="margin-top: 20px;">
+        <h2>Export to CSV</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="exportStartDate">Start Date:</label>
+                <input type="date" id="exportStartDate" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="exportEndDate">End Date:</label>
+                <input type="date" id="exportEndDate" class="form-control">
+            </div>
+            <div class="form-group">
+                <button onclick="exportToCSV()" class="btn-primary">Export CSV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Message Display -->
+    <div id="message" class="message" style="display: none;"></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/reports.js"></script>
+</body>
+</html>

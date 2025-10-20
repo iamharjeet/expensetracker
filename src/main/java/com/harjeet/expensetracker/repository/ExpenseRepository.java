@@ -17,30 +17,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     //method to find expenses by user, ordered by date
     List<Expense> findByUserIdOrderByDateDesc(Long userId);
 
-    // paginated method with filtering and search
-    /*// SIMPLIFIED - NO SEARCH for now, just pagination and date/category/account filters
-    @Query(value = "SELECT * FROM expenses e " +
-            "WHERE e.user_id = :userId " +
-            "AND (:startDate IS NULL OR e.date >= CAST(:startDate AS DATE)) " +
-            "AND (:endDate IS NULL OR e.date <= CAST(:endDate AS DATE)) " +
-            "AND (:categoryId IS NULL OR e.category_id = CAST(:categoryId AS BIGINT)) " +
-            "AND (:accountId IS NULL OR e.account_id = CAST(:accountId AS BIGINT)) " +
-            "ORDER BY e.date DESC",
-            countQuery = "SELECT COUNT(*) FROM expenses e " +
-                    "WHERE e.user_id = :userId " +
-                    "AND (:startDate IS NULL OR e.date >= CAST(:startDate AS DATE)) " +
-                    "AND (:endDate IS NULL OR e.date <= CAST(:endDate AS DATE)) " +
-                    "AND (:categoryId IS NULL OR e.category_id = CAST(:categoryId AS BIGINT)) " +
-                    "AND (:accountId IS NULL OR e.account_id = CAST(:accountId AS BIGINT))",
-            nativeQuery = true)
-    Page<Expense> findByUserIdWithFilters(
-            @Param("userId") Long userId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            @Param("categoryId") Long categoryId,
-            @Param("accountId") Long accountId,
-            Pageable pageable
-    );*/
+    // NEW: method to find expenses by user within a date range (for reports)
+    List<Expense> findByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
 
     // Paginated method with ALL filters including search
     @Query(value = "SELECT * FROM expenses e " +

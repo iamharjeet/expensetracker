@@ -25,7 +25,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [ ] Step 12: Improve Frontend - Dashboard & Charts (DEFERRED - Post-MVP)
 - [x] Step 13: Code Refactoring & Testing Foundation (Minimal - Exception Handling) ✅
 - [x] Step 14: File Upload - Receipts (Local First) ✅
-- [ ] Step 15: Reporting & Export with Testing
+- [x] Step 15: Reporting & Export with Testing ✅
 - [ ] Step 16: Professional Email System
 - [ ] Step 17: API Documentation
 - [ ] Step 18: Integration Testing & Test Coverage
@@ -37,7 +37,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [ ] Step 24: CI/CD Pipeline
 - [ ] Step 25: Production Readiness & Documentation
 
-## Current Step: 15
+## Current Step: 16
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -139,7 +139,16 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - Updated expenses.html with file input field and Receipt column in table
 - Updated expenses.js with async upload/download logic and automatic receipt loading
 - Successfully tested complete flow: create/edit expenses with receipts, download receipts, file validation
-- 
+- Step 15 completed: Implemented minimal reporting and CSV export system
+- Created ReportService.java with monthly summary calculations and top spending categories logic
+- Created ReportController.java with 2 REST endpoints (monthly summary JSON, CSV export download)
+- Updated ExpenseRepository.java with findByUserIdAndDateBetween() method for date range queries
+- Created reports.html with month/year selector, summary cards, and CSV export section
+- Created reports.js with API integration for summaries and CSV downloads
+- Enhanced styles.css with summary cards, category table, and responsive design
+- Updated navigation in all pages (users.html, expenses.html, categories.html, accounts.html, budgets.html)
+- Successfully tested monthly summary with income/expense calculations and top 5 categories ranking
+- Successfully tested CSV export with proper formatting and date range filtering
 
 
 ## Current Project Structure:
@@ -149,7 +158,7 @@ expensetracker/
 ├── PROGRESS.md
 ├── README.md
 ├── pom.xml
-├── uploads/                                    ✅ NEW (created automatically)
+├── uploads/                                    (created automatically)
 └── src/main/
     ├── java/com/harjeet/expensetracker/
     │   ├── ExpensetrackerApplication.java
@@ -167,14 +176,15 @@ expensetracker/
     │   │   ├── CategoryController.java
     │   │   ├── AccountController.java
     │   │   ├── BudgetController.java
-    │   │   └── ReceiptController.java           ✅ NEW
+    │   │   ├── ReceiptController.java
+    │   │   └── ReportController.java           ✅ NEW
     │   ├── dto/
     │   │   ├── UserDTO.java
     │   │   ├── ExpenseDTO.java
     │   │   ├── CategoryDTO.java
     │   │   ├── AccountDTO.java
     │   │   ├── BudgetDTO.java
-    │   │   └── ReceiptDTO.java                  ✅ NEW
+    │   │   └── ReceiptDTO.java
     │   ├── exception/
     │   │   ├── ResourceNotFoundException.java
     │   │   ├── BadRequestException.java
@@ -186,14 +196,14 @@ expensetracker/
     │   │   ├── Category.java
     │   │   ├── Account.java
     │   │   ├── Budget.java
-    │   │   └── Receipt.java                     ✅ NEW
+    │   │   └── Receipt.java
     │   ├── repository/
     │   │   ├── UserRepository.java
-    │   │   ├── ExpenseRepository.java
+    │   │   ├── ExpenseRepository.java          ✅ UPDATED
     │   │   ├── CategoryRepository.java
     │   │   ├── AccountRepository.java
     │   │   ├── BudgetRepository.java
-    │   │   └── ReceiptRepository.java           ✅ NEW
+    │   │   └── ReceiptRepository.java
     │   ├── security/
     │   │   ├── CustomUserDetailsService.java
     │   │   ├── JwtAuthenticationFilter.java
@@ -205,8 +215,9 @@ expensetracker/
     │       ├── CategoryService.java
     │       ├── AccountService.java
     │       ├── BudgetService.java
-    │       ├── FileStorageService.java          ✅ NEW
-    │       └── ReceiptService.java              ✅ NEW
+    │       ├── FileStorageService.java
+    │       ├── ReceiptService.java
+    │       └── ReportService.java              ✅ NEW
     └── resources/
         ├── db/
         │   └── migration/
@@ -215,23 +226,25 @@ expensetracker/
         │       ├── V3__create_accounts_table.sql
         │       ├── V4__create_expenses_table.sql
         │       ├── V5__create_budgets_table.sql
-        │       └── V6__create_receipts_table.sql ✅ NEW
+        │       └── V6__create_receipts_table.sql
         ├── static/
         │   ├── index.html
         │   ├── login.html
         │   ├── register.html
-        │   ├── users.html
-        │   ├── expenses.html                     ✅ UPDATED
-        │   ├── categories.html
-        │   ├── accounts.html
-        │   ├── budgets.html
-        │   ├── styles.css
+        │   ├── users.html                      ✅ UPDATED
+        │   ├── expenses.html                   ✅ UPDATED
+        │   ├── categories.html                 ✅ UPDATED
+        │   ├── accounts.html                   ✅ UPDATED
+        │   ├── budgets.html                    ✅ UPDATED
+        │   ├── reports.html                    ✅ NEW
+        │   ├── styles.css                      ✅ UPDATED
         │   └── js/
         │       ├── app.js
         │       ├── auth.js
-        │       ├── expenses.js                   ✅ UPDATED
+        │       ├── expenses.js
         │       ├── categories.js
         │       ├── accounts.js
-        │       └── budgets.js
+        │       ├── budgets.js
+        │       └── reports.js                  ✅ NEW
         └── application.properties
 ```

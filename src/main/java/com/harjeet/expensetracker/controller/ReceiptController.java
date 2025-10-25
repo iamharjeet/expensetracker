@@ -1,14 +1,13 @@
 package com.harjeet.expensetracker.controller;
 
 import com.harjeet.expensetracker.dto.ReceiptDTO;
+import com.harjeet.expensetracker.dto.ReceiptUploadResponse;
+import com.harjeet.expensetracker.dto.ReceiptUrlResponse;
 import com.harjeet.expensetracker.model.Receipt;
 import com.harjeet.expensetracker.service.FileStorageService;
 import com.harjeet.expensetracker.service.ReceiptService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,47 +18,44 @@ import org.springframework.web.multipart.MultipartFile;
 public class ReceiptController {
 
     private final ReceiptService receiptService;
-    private final FileStorageService fileStorageService;
 
+//    Upload a receipt file to S3, Can optionally link to an expense
     @PostMapping("/upload")
-    public ResponseEntity<ReceiptDTO> uploadReceipt(
+    public ResponseEntity<ReceiptUploadResponse> uploadReceipt(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("expenseId") Long expenseId) {
-        ReceiptDTO receipt = receiptService.uploadReceipt(expenseId, file);
-        return ResponseEntity.status(HttpStatus.CREATED).body(receipt);
+            @RequestParam("userId") Long userId,
+            @RequestParam(value = "expenseId", required = false) Long expenseId) {
+
+        ReceiptUploadResponse response = receiptService.uploadReceipt(file, userId, expenseId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/{id}/download")
-    public ResponseEntity<ByteArrayResource> downloadReceipt(@PathVariable Long id) {
-        Receipt receipt = receiptService.getReceiptById(id);
-        byte[] fileData = fileStorageService.loadFile(receipt.getFilepath());
-
-        ByteArrayResource resource = new ByteArrayResource(fileData);
-
-        // Extract extension from stored filepath (which has UUID + extension)
-        String extension = "";
-        String filepath = receipt.getFilepath();
-        int lastDotIndex = filepath.lastIndexOf(".");
-        if (lastDotIndex > 0) {
-            extension = filepath.substring(lastDotIndex);
-        }
-
-        // Add extension to original filename if it doesn't have one
-        String downloadFilename = receipt.getFilename();
-        if (!downloadFilename.toLowerCase().endsWith(extension.toLowerCase())) {
-            downloadFilename = downloadFilename + extension;
-        }
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(receipt.getContentType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + downloadFilename + "\"")
-                .body(resource);
+//    Get a pre-signed URL to download/view a receipt
+    @GetMapping("/{id}/url")
+    public ResponseEntity<ReceiptUrlResponse> getReceiptUrl(@PathVariable Long id) {
+        ReceiptUrlResponse response = receiptService.getReceiptUrl(id);
+        return ResponseEntity.ok(response);
     }
 
+//    Get receipt details by receipt ID
+    @GetMapping("/{id}")
+    public ResponseEntity<ReceiptDTO> getReceiptById(@PathVariable Long id) {
+        ReceiptDTO receipt = receiptService.getReceiptById(id);
+        return ResponseEntity.ok(receipt);
+    }
+
+//    Get receipt by expense ID
     @GetMapping("/expense/{expenseId}")
     public ResponseEntity<ReceiptDTO> getReceiptByExpenseId(@PathVariable Long expenseId) {
         return receiptService.getReceiptByExpenseId(expenseId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+//    Delete a receipt from S3 and database
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReceipt(@PathVariable Long id) {
+        receiptService.deleteReceipt(id);
+        return ResponseEntity.noContent().build();
     }
 }

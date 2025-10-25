@@ -8,7 +8,7 @@ let expenseReceipts = {}; // NEW: Store receipt info for each expense
 // Pagination and filter state
 let currentPage = 0;
 let totalPages = 0;
-let pageSize = 10;
+let pageSize = 100;
 let filters = {
     startDate: null,
     endDate: null,
@@ -251,35 +251,31 @@ function updateReceiptCell(expenseId) {
 }
 
 function displayExpenses(expenses) {
+
     const tbody = document.getElementById('expensesTableBody');
     const emptyState = document.getElementById('emptyState');
     const expenseCount = document.getElementById('expenseCount');
 
     // Handle undefined or null expenses
-    if (!expenses || !Array.isArray(expenses)) {
-        expenses = [];
-    }
-
-    expenseCount.textContent = expenses.length;
-
-    if (expenses.length === 0) {
+    if (!expenses || expenses.length === 0) {
         tbody.innerHTML = '';
         emptyState.style.display = 'block';
+        expenseCount.textContent = '0';
         return;
     }
 
     emptyState.style.display = 'none';
+    expenseCount.textContent = expenses.length;
+
     tbody.innerHTML = expenses.map(expense => `
         <tr>
             <td>${formatDate(expense.date)}</td>
             <td>${expense.description}</td>
-            <td>${expense.categoryName || '-'}</td>
-            <td>${expense.accountName || '-'}</td>
-            <td class="amount">$${parseFloat(expense.amount).toFixed(2)}</td>
-            <td id="receipt-${expense.id}">
-                <span style="color: #999;">No receipt</span>
-            </td>
-            <td>
+            <td>$${formatAmount(expense.amount)}</td>
+            <td>${expense.categoryName || 'N/A'}</td>
+            <td>${expense.accountName || 'N/A'}</td>
+            <td id="receipt-${expense.id}">-</td>
+            <td class="actions">
                 <button onclick="editExpense(${expense.id})" class="btn-edit">Edit</button>
                 <button onclick="deleteExpense(${expense.id})" class="btn-delete">Delete</button>
             </td>
@@ -287,58 +283,60 @@ function displayExpenses(expenses) {
     `).join('');
 }
 
-// Update pagination controls
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function formatAmount(amount) {
+    return parseFloat(amount).toFixed(2);
+}
+
 function updatePaginationControls(data) {
-    totalPages = data.totalPages;
-    const paginationControls = document.getElementById('paginationControls');
+    totalPages = data.totalPages || 0;
+    currentPage = data.currentPage || 0;
+
     const pageInfo = document.getElementById('pageInfo');
+    pageInfo.textContent = `Page ${currentPage + 1} of ${totalPages} (${data.totalItems || 0} total)`;
+
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
 
-    // Show/hide pagination controls
-    if (totalPages > 1) {
-        paginationControls.style.display = 'flex';
-    } else {
-        paginationControls.style.display = 'none';
-    }
-
-    // Update page info
-    pageInfo.textContent = `Page ${data.currentPage + 1} of ${totalPages}`;
-
-    // Enable/disable buttons
     prevBtn.disabled = !data.hasPrevious;
     nextBtn.disabled = !data.hasNext;
 }
 
-// Apply filters
+function goToPreviousPage() {
+    if (currentPage > 0) {
+        currentPage--;
+        loadExpenses();
+    }
+}
+
+function goToNextPage() {
+    if (currentPage < totalPages - 1) {
+        currentPage++;
+        loadExpenses();
+    }
+}
+
 function applyFilters() {
     filters.startDate = document.getElementById('filterStartDate').value || null;
     filters.endDate = document.getElementById('filterEndDate').value || null;
     filters.categoryId = document.getElementById('filterCategoryId').value || null;
     filters.accountId = document.getElementById('filterAccountId').value || null;
+    filters.searchTerm = document.getElementById('filterSearch').value || null;
 
-    // Reset to first page when filters change
-    currentPage = 0;
+    currentPage = 0; // Reset to first page
     loadExpenses();
 }
 
-// Handle search with debounce
-function handleSearchDebounced() {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(() => {
-        filters.searchTerm = document.getElementById('searchTerm').value.trim() || null;
-        currentPage = 0;
-        loadExpenses();
-    }, 500); // Wait 500ms after user stops typing
-}
-
-// Clear all filters
 function clearFilters() {
-    document.getElementById('searchTerm').value = '';
     document.getElementById('filterStartDate').value = '';
     document.getElementById('filterEndDate').value = '';
     document.getElementById('filterCategoryId').value = '';
     document.getElementById('filterAccountId').value = '';
+    document.getElementById('filterSearch').value = '';
 
     filters = {
         startDate: null,
@@ -352,38 +350,27 @@ function clearFilters() {
     loadExpenses();
 }
 
-// Go to next page
-function goToNextPage() {
-    if (currentPage < totalPages - 1) {
-        currentPage++;
-        loadExpenses();
-    }
+// Debounced search
+function onSearchChange() {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+        applyFilters();
+    }, 500);
 }
 
-// Go to previous page
-function goToPreviousPage() {
-    if (currentPage > 0) {
-        currentPage--;
-        loadExpenses();
-    }
-}
+async function handleSubmit(event) {
+    event.preventDefault();
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-}
-
-// NEW: Updated handleSubmit to include receipt upload
-async function handleSubmit(e) {
-    e.preventDefault();
-
+    const description = document.getElementById('description').value;
+    const amount = document.getElementById('amount').value;
+    const date = document.getElementById('date').value;
     const categoryId = document.getElementById('categoryId').value;
     const accountId = document.getElementById('accountId').value;
 
     const expenseData = {
-        description: document.getElementById('description').value,
-        amount: parseFloat(document.getElementById('amount').value),
-        date: document.getElementById('date').value,
+        description: description,
+        amount: parseFloat(amount),
+        date: date,
         userId: currentUserId,
         categoryId: categoryId ? parseInt(categoryId) : null,
         accountId: accountId ? parseInt(accountId) : null
@@ -547,12 +534,21 @@ function deleteExpense(id) {
     });
 }
 
-// NEW: Upload receipt function
+// NEW: Upload receipt function (Updated for S3)
 async function uploadReceipt(expenseId, file) {
     const token = localStorage.getItem('token');
+
+
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('userId', currentUserId); //  ADDED: userId for S3 organization
     formData.append('expenseId', expenseId);
+
+    // DEBUG: Log FormData contents
+        console.log('FormData contents:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ':', pair[1]);
+        }
 
     try {
         const response = await fetch(`${API_URL}/receipts/upload`, {
@@ -580,37 +576,38 @@ async function uploadReceipt(expenseId, file) {
     }
 }
 
-// NEW: Download receipt function
-function downloadReceipt(receiptId, filename) {
+// NEW: Download receipt function (Updated for S3 pre-signed URLs)
+async function downloadReceipt(receiptId, filename) {
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/receipts/${receiptId}/download`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    .then(response => {
+    try {
+        showMessage('Generating download link...', 'info');
+
+        // Get pre-signed URL from backend
+        const response = await fetch(`${API_URL}/receipts/${receiptId}/url`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
         if (response.status === 401 || response.status === 403) {
             logout();
             return;
         }
-        return response.blob();
-    })
-    .then(blob => {
-        // Create a download link and click it
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-    })
-    .catch(error => {
+
+        if (!response.ok) {
+            throw new Error('Failed to get receipt URL');
+        }
+
+        const data = await response.json();
+
+        // Open the pre-signed URL in a new tab
+        window.open(data.presignedUrl, '_blank');
+
+    } catch (error) {
         console.error('Error downloading receipt:', error);
         showMessage('Error downloading receipt', 'error');
-    });
+    }
 }
 
 function cancelEdit() {

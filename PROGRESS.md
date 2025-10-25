@@ -28,8 +28,8 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [x] Step 15: Reporting & Export with Testing ✅
 - [ ] Step 16: Professional Email System (DEFERRED - Post-MVP)
 - [x] Step 17: API Documentation (MINIMAL) ✅
-- [ ] Step 18: Integration Testing & Test Coverage
-- [ ] Step 19: AWS S3 Integration (Replace Local Storage)
+- [ ] Step 18: Integration Testing & Test Coverage (DEFERRED - Post-MVP)
+- [x] Step 19: AWS S3 Integration (Replace Local Storage) ✅
 - [ ] Step 20: Dockerize the Application
 - [ ] Step 21: Environment Configuration & Secrets
 - [ ] Step 22: Terraform - Core Infrastructure
@@ -37,7 +37,7 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [ ] Step 24: CI/CD Pipeline
 - [ ] Step 25: Production Readiness & Documentation
 
-## Current Step: 18
+## Current Step: 20
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -159,7 +159,21 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - All 8 controllers auto-documented with request/response schemas
 - JWT authentication working via Authorize button in Swagger UI
 - Successfully tested protected endpoints from Swagger interface
-
+- Step 18: DEFERRED to Post-MVP (Integration Testing & Test Coverage) - Skipped to focus on backend engineering and cloud deployment
+- Step 19 completed: Migrated receipt storage from local file system to AWS S3
+- Added AWS SDK dependencies (software.amazon.awssdk:s3 and software.amazon.awssdk:auth version 2.20.26) to pom.xml
+- Created AWS S3 bucket `expensetracker-receipts-harjeet-dev` in ca-central-1 region with IAM user for access
+- Updated application.properties with AWS S3 configuration (bucket name, region, pre-signed URL expiration, credentials via local.properties)
+- Created AwsS3Config.java with S3Client and S3Presigner beans for AWS operations
+- Created new DTOs: ReceiptUploadResponse.java and ReceiptUrlResponse.java for S3 responses
+- Created S3StorageService.java with methods for uploadFile, generatePresignedUrl, deleteFile, and fileExists with file validation (max 10MB, jpg/png/gif/pdf only)
+- Updated ReceiptService.java to use S3StorageService instead of FileStorageService with enhanced security and expenseId validation
+- Updated ReceiptController.java with new endpoints: POST /upload (with userId), GET /{id}/url (returns pre-signed URL), DELETE /{id}
+- Updated Receipt.java entity to make expenseId nullable for standalone uploads
+- Created Flyway migration V7__alter_receipts_expense_id_nullable.sql
+- Updated expenses.js frontend to include userId in uploads and use pre-signed URLs for downloads
+- Successfully tested all receipt operations: upload to S3, generate download URLs, link to expenses, and delete from S3
+- Receipts now organized in S3 by user: receipts/{userId}/{timestamp}_{uuid}.{ext}
 
 ## Current Project Structure:
 ```
@@ -168,7 +182,7 @@ expensetracker/
 ├── PROGRESS.md
 ├── README.md
 ├── pom.xml
-├── uploads/                                    (created automatically)
+├── uploads/                                    (deprecated - now using S3)
 └── src/main/
     ├── java/com/harjeet/expensetracker/
     │   ├── ExpensetrackerApplication.java
@@ -180,14 +194,15 @@ expensetracker/
     │   │   └── RegisterRequest.java
     │   ├── config/
     │   │   ├── DataInitializer.java
-    │   │   └── OpenApiConfig.java              ✅ NEW
+    │   │   ├── OpenApiConfig.java
+    │   │   └── AwsS3Config.java              ✅ NEW
     │   ├── controller/
     │   │   ├── UserController.java
     │   │   ├── ExpenseController.java
     │   │   ├── CategoryController.java
     │   │   ├── AccountController.java
     │   │   ├── BudgetController.java
-    │   │   ├── ReceiptController.java
+    │   │   ├── ReceiptController.java         ✅ UPDATED
     │   │   └── ReportController.java
     │   ├── dto/
     │   │   ├── UserDTO.java
@@ -195,7 +210,9 @@ expensetracker/
     │   │   ├── CategoryDTO.java
     │   │   ├── AccountDTO.java
     │   │   ├── BudgetDTO.java
-    │   │   └── ReceiptDTO.java
+    │   │   ├── ReceiptDTO.java
+    │   │   ├── ReceiptUploadResponse.java     ✅ NEW
+    │   │   └── ReceiptUrlResponse.java        ✅ NEW
     │   ├── exception/
     │   │   ├── ResourceNotFoundException.java
     │   │   ├── BadRequestException.java
@@ -207,7 +224,7 @@ expensetracker/
     │   │   ├── Category.java
     │   │   ├── Account.java
     │   │   ├── Budget.java
-    │   │   └── Receipt.java
+    │   │   └── Receipt.java                   ✅ UPDATED
     │   ├── repository/
     │   │   ├── UserRepository.java
     │   │   ├── ExpenseRepository.java
@@ -219,16 +236,17 @@ expensetracker/
     │   │   ├── CustomUserDetailsService.java
     │   │   ├── JwtAuthenticationFilter.java
     │   │   ├── JwtTokenProvider.java
-    │   │   └── SecurityConfig.java             ✅ UPDATED
+    │   │   └── SecurityConfig.java
     │   └── service/
     │       ├── UserService.java
     │       ├── ExpenseService.java
     │       ├── CategoryService.java
     │       ├── AccountService.java
     │       ├── BudgetService.java
-    │       ├── FileStorageService.java
-    │       ├── ReceiptService.java
-    │       └── ReportService.java
+    │       ├── FileStorageService.java        (deprecated - to be removed)
+    │       ├── ReceiptService.java            ✅ UPDATED
+    │       ├── ReportService.java
+    │       └── S3StorageService.java          ✅ NEW
     └── resources/
         ├── db/
         │   └── migration/
@@ -237,7 +255,8 @@ expensetracker/
         │       ├── V3__create_accounts_table.sql
         │       ├── V4__create_expenses_table.sql
         │       ├── V5__create_budgets_table.sql
-        │       └── V6__create_receipts_table.sql
+        │       ├── V6__create_receipts_table.sql
+        │       └── V7__alter_receipts_expense_id_nullable.sql  ✅ NEW
         ├── static/
         │   ├── index.html
         │   ├── login.html
@@ -252,10 +271,11 @@ expensetracker/
         │   └── js/
         │       ├── app.js
         │       ├── auth.js
-        │       ├── expenses.js
+        │       ├── expenses.js                ✅ UPDATED
         │       ├── categories.js
         │       ├── accounts.js
         │       ├── budgets.js
         │       └── reports.js
-        └── application.properties              ✅ UPDATED
+        ├── application.properties              ✅ UPDATED
+        └── local.properties                    ✅ NEW (gitignored)
 ```

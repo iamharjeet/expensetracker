@@ -33,7 +33,7 @@ public class Receipt {
     @Column(nullable = false)
     private Long size;
 
-    @Column(name = "expense_id", nullable = false)
+    @Column(name = "expense_id", nullable = true)
     private Long expenseId;
 
     @CreatedDate

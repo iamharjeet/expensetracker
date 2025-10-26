@@ -40,9 +40,13 @@ docker-compose up
 ```
 
 ## 📝 Project Status
-Currently on **Step 1** of 20-step roadmap.
+Currently on **Step 20** of 25-step roadmap.
 
 See [PROGRESS.md](PROGRESS.md) for detailed progress tracking.
+
+## 🔒 Security Note
+The default credentials in `application.properties` are for local development only.
+Production deployment uses secure credentials from AWS Secrets Manager (configured in Terraform).
 
 ## 👨‍💻 Author
 Harjeet Singh

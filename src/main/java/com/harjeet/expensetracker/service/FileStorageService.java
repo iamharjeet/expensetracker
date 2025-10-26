@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-@Service
+// @Service  // Deprecated - using S3StorageService instead
 public class FileStorageService {
 
     private final Path uploadDir = Paths.get("uploads");

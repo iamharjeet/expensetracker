@@ -61,3 +61,8 @@ build/
 .vscode/
 
 src/main/resources/local.properties
+
+# Environment variables
+.env
+*.env
+!.env.example

@@ -30,14 +30,14 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [x] Step 17: API Documentation (MINIMAL) ✅
 - [ ] Step 18: Integration Testing & Test Coverage (DEFERRED - Post-MVP)
 - [x] Step 19: AWS S3 Integration (Replace Local Storage) ✅
-- [ ] Step 20: Dockerize the Application
+- [x] Step 20: Dockerize the Application ✅
 - [ ] Step 21: Environment Configuration & Secrets
 - [ ] Step 22: Terraform - Core Infrastructure
 - [ ] Step 23: Terraform - Application & Observability
 - [ ] Step 24: CI/CD Pipeline
 - [ ] Step 25: Production Readiness & Documentation
 
-## Current Step: 20
+## Current Step: 21
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -174,15 +174,38 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - Updated expenses.js frontend to include userId in uploads and use pre-signed URLs for downloads
 - Successfully tested all receipt operations: upload to S3, generate download URLs, link to expenses, and delete from S3
 - Receipts now organized in S3 by user: receipts/{userId}/{timestamp}_{uuid}.{ext}
+- Step 20 completed: Successfully dockerized the application with multi-container setup
+- Created Dockerfile with multi-stage build (Maven build stage using eclipse-temurin:21-alpine + JRE runtime stage)
+- Created .dockerignore file to optimize Docker build context (excludes target/, IDE files, logs, documentation)
+- Updated docker-compose.yml to include app service alongside PostgreSQL with proper networking and health checks
+- Configured environment variables in docker-compose.yml for database connection, JWT secrets, and AWS S3 credentials
+- Created .env.example template file for environment variable documentation
+- Updated application.properties to support environment variable overrides using ${VAR:default} pattern for database, JWT, and AWS configuration
+- Added Spring Boot Actuator dependency for health monitoring (spring-boot-starter-actuator)
+- Commented out deprecated FileStorageService (@Service annotation) as application now uses S3StorageService
+- Configured Spring Actuator endpoints in application.properties (health, info exposed)
+- Created Docker bridge network 'expensetracker-network' for inter-container communication
+- Successfully built Docker image and tested multi-container deployment with docker-compose up --build
+- Verified PostgreSQL health checks, Flyway migrations execution in containerized environment
+- Tested health endpoint (http://localhost:8080/actuator/health) returning status UP
+- Confirmed all REST endpoints working in containerized environment (register, login, expenses, budgets, receipts)
+- Application runs as non-root user 'spring' for security
+- Docker image uses JRE (not JDK) for smaller production image size
+- Successfully tested complete flow: container startup → database migration → app initialization → API access
+
 
 ## Current Project Structure:
 ```
 expensetracker/
-├── docker-compose.yml
+├── Dockerfile                                      ✅ NEW
+├── .dockerignore                                   ✅ NEW
+├── docker-compose.yml                              ✅ UPDATED
+├── .env.example                                    ✅ NEW
+├── .env                                            (gitignored)
 ├── PROGRESS.md
 ├── README.md
-├── pom.xml
-├── uploads/                                    (deprecated - now using S3)
+├── pom.xml                                         ✅ UPDATED (added actuator)
+├── uploads/                                        (deprecated - now using S3)
 └── src/main/
     ├── java/com/harjeet/expensetracker/
     │   ├── ExpensetrackerApplication.java
@@ -195,14 +218,14 @@ expensetracker/
     │   ├── config/
     │   │   ├── DataInitializer.java
     │   │   ├── OpenApiConfig.java
-    │   │   └── AwsS3Config.java              ✅ NEW
+    │   │   └── AwsS3Config.java
     │   ├── controller/
     │   │   ├── UserController.java
     │   │   ├── ExpenseController.java
     │   │   ├── CategoryController.java
     │   │   ├── AccountController.java
     │   │   ├── BudgetController.java
-    │   │   ├── ReceiptController.java         ✅ UPDATED
+    │   │   ├── ReceiptController.java
     │   │   └── ReportController.java
     │   ├── dto/
     │   │   ├── UserDTO.java
@@ -211,8 +234,8 @@ expensetracker/
     │   │   ├── AccountDTO.java
     │   │   ├── BudgetDTO.java
     │   │   ├── ReceiptDTO.java
-    │   │   ├── ReceiptUploadResponse.java     ✅ NEW
-    │   │   └── ReceiptUrlResponse.java        ✅ NEW
+    │   │   ├── ReceiptUploadResponse.java
+    │   │   └── ReceiptUrlResponse.java
     │   ├── exception/
     │   │   ├── ResourceNotFoundException.java
     │   │   ├── BadRequestException.java
@@ -224,7 +247,7 @@ expensetracker/
     │   │   ├── Category.java
     │   │   ├── Account.java
     │   │   ├── Budget.java
-    │   │   └── Receipt.java                   ✅ UPDATED
+    │   │   └── Receipt.java
     │   ├── repository/
     │   │   ├── UserRepository.java
     │   │   ├── ExpenseRepository.java
@@ -243,10 +266,10 @@ expensetracker/
     │       ├── CategoryService.java
     │       ├── AccountService.java
     │       ├── BudgetService.java
-    │       ├── FileStorageService.java        (deprecated - to be removed)
-    │       ├── ReceiptService.java            ✅ UPDATED
+    │       ├── FileStorageService.java            ✅ DEPRECATED (commented @Service)
+    │       ├── ReceiptService.java
     │       ├── ReportService.java
-    │       └── S3StorageService.java          ✅ NEW
+    │       └── S3StorageService.java
     └── resources/
         ├── db/
         │   └── migration/
@@ -256,7 +279,7 @@ expensetracker/
         │       ├── V4__create_expenses_table.sql
         │       ├── V5__create_budgets_table.sql
         │       ├── V6__create_receipts_table.sql
-        │       └── V7__alter_receipts_expense_id_nullable.sql  ✅ NEW
+        │       └── V7__alter_receipts_expense_id_nullable.sql
         ├── static/
         │   ├── index.html
         │   ├── login.html
@@ -271,11 +294,11 @@ expensetracker/
         │   └── js/
         │       ├── app.js
         │       ├── auth.js
-        │       ├── expenses.js                ✅ UPDATED
+        │       ├── expenses.js
         │       ├── categories.js
         │       ├── accounts.js
         │       ├── budgets.js
         │       └── reports.js
-        ├── application.properties              ✅ UPDATED
-        └── local.properties                    ✅ NEW (gitignored)
+        ├── application.properties                  ✅ UPDATED (env var support + actuator)
+        └── local.properties                        (gitignored)
 ```

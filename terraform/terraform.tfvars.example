@@ -1,0 +1,26 @@
+# AWS Configuration
+aws_region  = "us-east-1"
+environment = "dev"
+
+# Project Configuration
+project_name = "expensetracker"
+
+# VPC Configuration
+vpc_cidr           = "10.0.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
+
+# RDS Configuration
+db_instance_class    = "db.t3.micro"
+db_name              = "expensetracker"
+db_username          = "postgres"
+db_password          = "CHANGE_ME_SECURE_PASSWORD" # Change this!
+db_allocated_storage = 20
+
+# Application Configuration
+app_port = 8080
+
+# JWT Configuration
+jwt_secret = "CHANGE_ME_SECURE_JWT_SECRET" # Change this! Use a long random string
+
+# S3 Configuration
+receipts_bucket_name = "expensetracker-receipts-dev-YOUR_UNIQUE_SUFFIX" # Must be globally unique!

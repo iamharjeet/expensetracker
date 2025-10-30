@@ -31,13 +31,13 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [ ] Step 18: Integration Testing & Test Coverage (DEFERRED - Post-MVP)
 - [x] Step 19: AWS S3 Integration (Replace Local Storage) ✅
 - [x] Step 20: Dockerize the Application ✅
-- [ ] Step 21: Environment Configuration & Secrets
-- [ ] Step 22: Terraform - Core Infrastructure
+- [ ] Step 21: Environment Configuration & Secrets (DEFERRED - Already handled via env vars in Step 20, secrets will be managed in ECS Task Definition)
+- [x] Step 22: Terraform - Core Infrastructure ✅
 - [ ] Step 23: Terraform - Application & Observability
 - [ ] Step 24: CI/CD Pipeline
 - [ ] Step 25: Production Readiness & Documentation
 
-## Current Step: 21
+## Current Step: 23
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -192,20 +192,48 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - Application runs as non-root user 'spring' for security
 - Docker image uses JRE (not JDK) for smaller production image size
 - Successfully tested complete flow: container startup → database migration → app initialization → API access
-
+  Step 21: DEFERRED to Post-MVP
+- Step 22 completed: Implemented Terraform Infrastructure as Code (IaC) for AWS deployment in ca-central-1 (Canada - Montreal) region. 
+- Created comprehensive cloud infrastructure including VPC with 2 public subnets across multiple availability zones (ca-central-1a, ca-central-1b), Internet Gateway, and route tables for network connectivity. 
+- Provisioned RDS PostgreSQL 15 database (db.t3.micro, 20GB GP3 storage, encrypted at rest) with automated backups disabled for cost optimization, enhanced monitoring enabled (60-second intervals) with CloudWatch logs export (postgresql, upgrade logs), and IAM role for RDS monitoring. 
+- Created S3 bucket (expensetracker-receipts-dev-harjeet2025) for receipt storage with server-side encryption (AES256), public access blocked, lifecycle policy (365-day retention with automatic deletion), CORS configuration for future browser uploads, and abort incomplete multipart uploads after 7 days. 
+- Implemented IAM security with 3 roles (ECS task execution role with AmazonECSTaskExecutionRolePolicy, ECS task role with S3 and CloudWatch permissions, RDS monitoring role with AmazonRDSEnhancedMonitoringRole) and 2 custom policies for S3 access (PutObject, GetObject, DeleteObject, ListBucket) and CloudWatch logs (CreateLogGroup, CreateLogStream, PutLogEvents). 
+- Configured 3 security groups for network isolation: ALB security group (allows HTTP/HTTPS from internet), ECS tasks security group (allows traffic from ALB on port 8080), and RDS security group (allows PostgreSQL port 5432 only from ECS tasks, blocks all other access). 
+- Set up 2 CloudWatch log groups (/ecs/expensetracker-dev with 7-day retention, /ecs/expensetracker-dev-task with 3-day retention). 
+- Total infrastructure: 28 AWS resources deployed via 12 Terraform files (main.tf, variables.tf, vpc.tf, security-groups.tf, rds.tf, s3.tf, iam.tf, cloudwatch.tf, outputs.tf, terraform.tfvars.example, .gitignore, README.md). 
+- Successfully demonstrated Infrastructure as Code best practices, cost optimization (free tier eligible, single-AZ RDS, no NAT Gateway saves $32/month, S3 lifecycle policies), security hardening (encryption at rest and in transit, network isolation via security groups, RDS not publicly accessible despite being in public subnet, least privilege IAM policies, all secrets externalized), and professional DevOps workflow with comprehensive documentation. 
+- All outputs captured including RDS endpoint (expensetracker-dev-db.cnaayeogwvw9.ca-central-1.rds.amazonaws.com:5432), VPC ID (vpc-0df89024018d1f104), subnet IDs, security group IDs, IAM role ARNs, and S3 bucket name for use in Step 23 (ECS deployment). 
+- Estimated monthly cost: ~$19-20 after free tier expires.
 
 ## Current Project Structure:
 ```
 expensetracker/
-├── Dockerfile                                      ✅ NEW
-├── .dockerignore                                   ✅ NEW
-├── docker-compose.yml                              ✅ UPDATED
-├── .env.example                                    ✅ NEW
+├── Dockerfile                                      
+├── .dockerignore                                   
+├── docker-compose.yml                              
+├── .env.example                                    
 ├── .env                                            (gitignored)
 ├── PROGRESS.md
 ├── README.md
-├── pom.xml                                         ✅ UPDATED (added actuator)
+├── pom.xml                                         
 ├── uploads/                                        (deprecated - now using S3)
+├── terraform/                                      ✅ NEW
+│   ├── main.tf                                     ✅ NEW
+│   ├── variables.tf                                ✅ NEW
+│   ├── vpc.tf                                      ✅ NEW
+│   ├── security-groups.tf                          ✅ NEW
+│   ├── rds.tf                                      ✅ NEW
+│   ├── s3.tf                                       ✅ NEW
+│   ├── iam.tf                                      ✅ NEW
+│   ├── cloudwatch.tf                               ✅ NEW
+│   ├── outputs.tf                                  ✅ NEW
+│   ├── terraform.tfvars.example                    ✅ NEW
+│   ├── terraform.tfvars                            (gitignored)
+│   ├── .terraform/                                 (gitignored)
+│   ├── terraform.tfstate                           (gitignored)
+│   ├── terraform.tfstate.backup                    (gitignored)
+│   ├── .gitignore                                  ✅ NEW
+│   └── README.md                                   ✅ NEW
 └── src/main/
     ├── java/com/harjeet/expensetracker/
     │   ├── ExpensetrackerApplication.java
@@ -299,6 +327,6 @@ expensetracker/
         │       ├── accounts.js
         │       ├── budgets.js
         │       └── reports.js
-        ├── application.properties                  ✅ UPDATED (env var support + actuator)
+        ├── application.properties                  
         └── local.properties                        (gitignored)
 ```

@@ -105,7 +105,7 @@ jobs:
       - name: Download task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition expensetracker-dev-task \
+            --task-definition expensetracker-dev \
             --query taskDefinition > task-definition.json
       
       - name: Update task definition with new image

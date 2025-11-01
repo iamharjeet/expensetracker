@@ -113,7 +113,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: expensetracker
+          container-name: expensetracker-container
           image: ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.sha.outputs.short_sha }}
       
       - name: Deploy to Amazon ECS

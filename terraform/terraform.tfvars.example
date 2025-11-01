@@ -24,3 +24,9 @@ jwt_secret = "CHANGE_ME_SECURE_JWT_SECRET" # Change this! Use a long random stri
 
 # S3 Configuration
 receipts_bucket_name = "expensetracker-receipts-dev-YOUR_UNIQUE_SUFFIX" # Must be globally unique!
+
+# ECS Configuration
+docker_image      = "your-dockerhub-username/expensetracker:latest" # Replace with your Docker Hub image
+ecs_task_cpu      = "256"  # 0.25 vCPU (minimum for Fargate)
+ecs_task_memory   = "512"  # 512 MB (minimum for 256 CPU)
+ecs_desired_count = 1      # Single task for cost optimization

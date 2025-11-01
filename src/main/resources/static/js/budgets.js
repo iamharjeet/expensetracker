@@ -26,7 +26,7 @@ function setCurrentMonthYear() {
 async function loadCategories() {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/categories`, {
+        const response = await fetch(`${API_URL}/api/categories`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -66,7 +66,7 @@ async function loadBudgets() {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/budgets/user/${userId}`, {
+        const response = await fetch(`${API_URL}/api/budgets/user/${userId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -163,7 +163,7 @@ function setupFormSubmit() {
 async function createBudget(budgetData) {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/budgets`, {
+        const response = await fetch(`${API_URL}/api/budgets`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -211,7 +211,7 @@ function editBudget(id) {
 async function updateBudget(id, budgetData) {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/budgets/${id}`, {
+        const response = await fetch(`${API_URL}/api/budgets/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -243,7 +243,7 @@ async function deleteBudget(id) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/budgets/${id}`, {
+        const response = await fetch(`${API_URL}/api/budgets/${id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`

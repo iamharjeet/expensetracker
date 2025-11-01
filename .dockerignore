@@ -51,3 +51,14 @@ PROGRESS.md
 Dockerfile
 docker-compose*.yml
 .dockerignore
+
+
+# Terraform files
+terraform/
+*.tf
+*.tfstate
+*.tfstate.backup
+.terraform/
+terraform.tfvars
+*.tfvars
+terraform-outputs.txt

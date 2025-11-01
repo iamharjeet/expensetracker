@@ -28,7 +28,7 @@ function loadAccounts() {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/accounts/user/${currentUserId}`, {
+    fetch(`${API_URL}/api/accounts/user/${currentUserId}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -99,7 +99,7 @@ function createAccount(accountData) {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/accounts`, {
+    fetch(`${API_URL}/api/accounts`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -131,7 +131,7 @@ function editAccount(id) {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/accounts/${id}`, {
+    fetch(`${API_URL}/api/accounts/${id}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -166,7 +166,7 @@ function updateAccount(id, accountData) {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/accounts/${id}`, {
+    fetch(`${API_URL}/api/accounts/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -202,7 +202,7 @@ function deleteAccount(id) {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/accounts/${id}`, {
+    fetch(`${API_URL}/api/accounts/${id}`, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`

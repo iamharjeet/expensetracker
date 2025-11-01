@@ -53,7 +53,7 @@ function setDefaultDate() {
 function loadCategories() {
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/categories`, {
+    fetch(`${API_URL}/api/categories`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -102,7 +102,7 @@ function populateFilterCategoryDropdown() {
 function loadAccounts() {
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/accounts/user/${currentUserId}`, {
+    fetch(`${API_URL}/api/accounts/user/${currentUserId}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -172,7 +172,7 @@ function loadExpenses() {
         queryParams += `&searchTerm=${encodeURIComponent(filters.searchTerm)}`;
     }
 
-    fetch(`${API_URL}/expenses/user/${currentUserId}/paginated?${queryParams}`, {
+    fetch(`${API_URL}/api/expenses/user/${currentUserId}/paginated?${queryParams}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -213,7 +213,7 @@ function loadReceiptsForExpenses(expenses) {
     expenseReceipts = {}; // Reset
 
     expenses.forEach(expense => {
-        fetch(`${API_URL}/receipts/expense/${expense.id}`, {
+        fetch(`${API_URL}/api/receipts/expense/${expense.id}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -390,7 +390,7 @@ async function createExpense(expenseData) {
 
     try {
         // First, create the expense
-        const response = await fetch(`${API_URL}/expenses`, {
+        const response = await fetch(`${API_URL}/api/expenses`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -427,7 +427,7 @@ function editExpense(id) {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/expenses/${id}`, {
+    fetch(`${API_URL}/api/expenses/${id}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -471,7 +471,7 @@ async function updateExpense(id, expenseData) {
 
     try {
         // First, update the expense
-        const response = await fetch(`${API_URL}/expenses/${id}`, {
+        const response = await fetch(`${API_URL}/api/expenses/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -512,7 +512,7 @@ function deleteExpense(id) {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/expenses/${id}`, {
+    fetch(`${API_URL}/api/expenses/${id}`, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -551,7 +551,7 @@ async function uploadReceipt(expenseId, file) {
         }
 
     try {
-        const response = await fetch(`${API_URL}/receipts/upload`, {
+        const response = await fetch(`${API_URL}/api/receipts/upload`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -584,7 +584,7 @@ async function downloadReceipt(receiptId, filename) {
         showMessage('Generating download link...', 'info');
 
         // Get pre-signed URL from backend
-        const response = await fetch(`${API_URL}/receipts/${receiptId}/url`, {
+        const response = await fetch(`${API_URL}/api/receipts/${receiptId}/url`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

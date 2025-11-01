@@ -70,6 +70,8 @@ src/main/resources/local.properties
 # Local .terraform directories
 **/.terraform/*
 
+.terraform/
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
@@ -96,3 +98,6 @@ terraform.rc
 # .terraform.lock.hcl
 
 terraform-outputs.txt
+outputs.tf.backup-step22
+security-groups.tf.backup-step22
+variables.tf.backup-step22

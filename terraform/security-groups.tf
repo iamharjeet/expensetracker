@@ -51,6 +51,15 @@ resource "aws_security_group" "ecs_tasks" {
     description     = "Allow traffic from ALB"
   }
 
+  # Allow public access (since we're not using ALB)
+  ingress {
+    from_port   = var.app_port
+    to_port     = var.app_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow public access to application"
+  }
+
   # Allow all outbound traffic (for internet access, AWS services, RDS)
   egress {
     from_port   = 0

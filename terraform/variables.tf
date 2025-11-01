@@ -79,3 +79,39 @@ variable "receipts_bucket_name" {
   description = "S3 bucket name for receipt storage (must be globally unique)"
   type        = string
 }
+
+# ECS Configuration
+variable "docker_image" {
+  description = "Docker image for the application (from Docker Hub)"
+  type        = string
+  default     = "your-dockerhub-username/expensetracker:latest"
+}
+
+variable "ecs_task_cpu" {
+  description = "CPU units for ECS task (256 = 0.25 vCPU)"
+  type        = string
+  default     = "256" # Minimum for Fargate
+}
+
+variable "ecs_task_memory" {
+  description = "Memory for ECS task in MB"
+  type        = string
+  default     = "512" # Minimum for Fargate with 256 CPU
+}
+
+variable "ecs_desired_count" {
+  description = "Desired number of ECS tasks"
+  type        = number
+  default     = 1 # Single task for cost optimization
+}
+variable "aws_access_key_id" {
+  description = "AWS Access Key ID for S3 access"
+  type        = string
+  sensitive   = true
+}
+
+variable "aws_secret_access_key" {
+  description = "AWS Secret Access Key for S3 access"
+  type        = string
+  sensitive   = true
+}

@@ -49,7 +49,7 @@ async function loadMonthlySummary() {
     showLoading(true);
 
     try {
-        const response = await fetch(`${API_URL}/reports/monthly-summary?userId=${userId}&month=${month}&year=${year}`, {
+        const response = await fetch(`${API_URL}/api/reports/monthly-summary?userId=${userId}&month=${month}&year=${year}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -152,7 +152,7 @@ async function exportToCSV() {
     showLoading(true);
 
     try {
-        const response = await fetch(`${API_URL}/reports/export-csv?userId=${userId}&startDate=${startDate}&endDate=${endDate}`, {
+        const response = await fetch(`${API_URL}/api/reports/export-csv?userId=${userId}&startDate=${startDate}&endDate=${endDate}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`

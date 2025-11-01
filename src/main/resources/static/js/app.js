@@ -20,7 +20,7 @@ async function loadUsers() {
     try {
         loading.style.display = 'block';
 
-        const response = await fetch(`${API_URL}/users`, {
+        const response = await fetch(`${API_URL}/api/users`, {
             headers: getAuthHeaders()
         });
 
@@ -77,14 +77,14 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
         let response;
         if (userId) {
             // Update existing user
-            response = await fetch(`${API_URL}/users/${userId}`, {
+            response = await fetch(`${API_URL}/api/users/${userId}`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(userData)
             });
         } else {
             // Create new user
-            response = await fetch(`${API_URL}/users`, {
+            response = await fetch(`${API_URL}/api/users`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(userData)
@@ -111,7 +111,7 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
 // Edit user
 async function editUser(id) {
     try {
-        const response = await fetch(`${API_URL}/users/${id}`, {
+        const response = await fetch(`${API_URL}/api/users/${id}`, {
             headers: getAuthHeaders()
         });
 
@@ -142,7 +142,7 @@ async function deleteUser(id) {
     }
 
     try {
-        const response = await fetch(`${API_URL}/users/${id}`, {
+        const response = await fetch(`${API_URL}/api/users/${id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });

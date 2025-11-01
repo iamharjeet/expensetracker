@@ -33,11 +33,11 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [x] Step 20: Dockerize the Application ✅
 - [ ] Step 21: Environment Configuration & Secrets (DEFERRED - Already handled via env vars in Step 20, secrets will be managed in ECS Task Definition)
 - [x] Step 22: Terraform - Core Infrastructure ✅
-- [ ] Step 23: Terraform - Application & Observability
+- [x] Step 23: Terraform - Application & Observability ✅
 - [ ] Step 24: CI/CD Pipeline
 - [ ] Step 25: Production Readiness & Documentation
 
-## Current Step: 23
+## Current Step: 24
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -204,6 +204,20 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - Successfully demonstrated Infrastructure as Code best practices, cost optimization (free tier eligible, single-AZ RDS, no NAT Gateway saves $32/month, S3 lifecycle policies), security hardening (encryption at rest and in transit, network isolation via security groups, RDS not publicly accessible despite being in public subnet, least privilege IAM policies, all secrets externalized), and professional DevOps workflow with comprehensive documentation. 
 - All outputs captured including RDS endpoint (expensetracker-dev-db.cnaayeogwvw9.ca-central-1.rds.amazonaws.com:5432), VPC ID (vpc-0df89024018d1f104), subnet IDs, security group IDs, IAM role ARNs, and S3 bucket name for use in Step 23 (ECS deployment). 
 - Estimated monthly cost: ~$19-20 after free tier expires.
+- Step 23 completed: Deployed application to AWS ECS Fargate with full observability
+- Created 2 new Terraform files: ecs.tf (ECS Fargate cluster, task definition with environment variables, service with public IP) and cloudwatch-enhanced.tf (5 CloudWatch alarms for ECS/RDS monitoring, CloudWatch dashboard for visualization)
+- Updated 3 existing Terraform files: variables.tf (added docker_image, ecs_task_cpu, ecs_task_memory, ecs_desired_count), outputs.tf (added ECS outputs and app access instructions), security-groups.tf (added public access rule on port 8080)
+- Fixed AwsS3Config.java to use DefaultCredentialsProvider for IAM role authentication instead of hardcoded AWS credentials
+- Pushed Docker image to Docker Hub (iamharjeet/expensetracker:latest) for deployment
+- Deployed 11 new AWS resources via terraform apply: 1 ECS cluster, 1 task definition, 1 service, 5 alarms, 1 dashboard, plus updated security group
+- Application running serverless on ECS Fargate at http://35.183.95.236:8080
+- Using ECS Task IAM Role for S3 access (no AWS credentials needed in environment variables)
+- Connected to RDS PostgreSQL database with Flyway migrations applied successfully
+- Full CloudWatch monitoring: CPU/Memory alarms for ECS, CPU/Storage/Connections alarms for RDS
+- CloudWatch Dashboard displays real-time metrics for ECS and RDS resources
+- Cost optimization: No ALB ($16/month saved), Docker Hub instead of ECR ($1/month saved), single task (256 CPU, 512 MB RAM)
+- Total cost: $0/month within AWS free tier (first 12 months), ~$27/month after free tier expires
+- Production-grade deployment: Infrastructure as Code, container orchestration, comprehensive observability
 
 ## Current Project Structure:
 ```
@@ -217,23 +231,25 @@ expensetracker/
 ├── README.md
 ├── pom.xml                                         
 ├── uploads/                                        (deprecated - now using S3)
-├── terraform/                                      ✅ NEW
-│   ├── main.tf                                     ✅ NEW
-│   ├── variables.tf                                ✅ NEW
-│   ├── vpc.tf                                      ✅ NEW
-│   ├── security-groups.tf                          ✅ NEW
-│   ├── rds.tf                                      ✅ NEW
-│   ├── s3.tf                                       ✅ NEW
-│   ├── iam.tf                                      ✅ NEW
-│   ├── cloudwatch.tf                               ✅ NEW
-│   ├── outputs.tf                                  ✅ NEW
-│   ├── terraform.tfvars.example                    ✅ NEW
+├── terraform/                                      ✅ UPDATED
+│   ├── main.tf                                     ✅ Step 22
+│   ├── variables.tf                                🔄 UPDATED in Step 23
+│   ├── vpc.tf                                      ✅ Step 22
+│   ├── security-groups.tf                          🔄 UPDATED in Step 23
+│   ├── rds.tf                                      ✅ Step 22
+│   ├── s3.tf                                       ✅ Step 22
+│   ├── iam.tf                                      ✅ Step 22
+│   ├── cloudwatch.tf                               ✅ Step 22
+│   ├── ecs.tf                                      ⭐ NEW in Step 23
+│   ├── cloudwatch-enhanced.tf                      ⭐ NEW in Step 23
+│   ├── outputs.tf                                  🔄 UPDATED in Step 23
+│   ├── terraform.tfvars.example                    ✅ Step 22
 │   ├── terraform.tfvars                            (gitignored)
 │   ├── .terraform/                                 (gitignored)
 │   ├── terraform.tfstate                           (gitignored)
 │   ├── terraform.tfstate.backup                    (gitignored)
-│   ├── .gitignore                                  ✅ NEW
-│   └── README.md                                   ✅ NEW
+│   ├── .gitignore                                  ✅ Step 22
+│   └── README.md                                   ✅ Step 22
 └── src/main/
     ├── java/com/harjeet/expensetracker/
     │   ├── ExpensetrackerApplication.java

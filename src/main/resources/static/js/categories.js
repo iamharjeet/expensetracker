@@ -24,7 +24,7 @@ function loadCategories() {
     showLoading(true);
     const token = localStorage.getItem('token');
 
-    fetch(`${API_URL}/categories`, {
+    fetch(`${API_URL}/api/categories`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }

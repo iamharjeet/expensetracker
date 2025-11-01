@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:8080/api';
+//const API_URL = 'http://localhost:8080/api';
+const API_URL = ""; // same origin
 
 // Handle Login
 async function handleLogin(event) {
@@ -15,7 +16,7 @@ async function handleLogin(event) {
         loginBtn.style.display = 'none';
         spinner.style.display = 'inline-block';
 
-        const response = await fetch(`${API_URL}/auth/login`, {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -75,7 +76,7 @@ async function handleRegister(event) {
         registerBtn.style.display = 'none';
         spinner.style.display = 'inline-block';
 
-        const response = await fetch(`${API_URL}/auth/register`, {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

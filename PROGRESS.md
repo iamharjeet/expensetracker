@@ -34,10 +34,10 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - [ ] Step 21: Environment Configuration & Secrets (DEFERRED - Already handled via env vars in Step 20, secrets will be managed in ECS Task Definition)
 - [x] Step 22: Terraform - Core Infrastructure ✅
 - [x] Step 23: Terraform - Application & Observability ✅
-- [ ] Step 24: CI/CD Pipeline
+- [x] Step 24: CI/CD Pipeline ✅
 - [ ] Step 25: Production Readiness & Documentation
 
-## Current Step: 24
+## Current Step: 25
 
 ## Notes:
 - Step 1 completed: Basic Spring Boot project created
@@ -218,10 +218,19 @@ markdown# Cloud-Native Expense Tracker - Progress Tracker
 - Cost optimization: No ALB ($16/month saved), Docker Hub instead of ECR ($1/month saved), single task (256 CPU, 512 MB RAM)
 - Total cost: $0/month within AWS free tier (first 12 months), ~$27/month after free tier expires
 - Production-grade deployment: Infrastructure as Code, container orchestration, comprehensive observability
-
+- Step 24 completed: Implemented automated CI/CD pipeline using GitHub Actions with three-job workflow for continuous deployment to AWS ECS. 
+- Created .github/workflows/deploy.yml containing Build job (Maven package with Java 21, JAR artifact upload), Docker job (image build and push to Docker Hub with commit SHA and latest tags), and Deploy job (AWS ECS service update with task definition management). 
+- Configured 7 GitHub secrets for authentication (DOCKERHUB_USERNAME, DOCKERHUB_TOKEN, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, ECS_CLUSTER_NAME, ECS_SERVICE_NAME). 
+- Fixed task definition name from expensetracker-dev-task to expensetracker-dev and container name from expensetracker to expensetracker-container to match actual ECS configuration. 
+- Successfully tested complete deployment pipeline with ~7-12 minute runtime, automatic Docker image versioning, and zero-downtime ECS rolling updates. 
+- Pipeline now automatically deploys application to AWS ECS on every push to main branch.
+- 
 ## Current Project Structure:
 ```
 expensetracker/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml                              ⭐ NEW in Step 24
 ├── Dockerfile                                      
 ├── .dockerignore                                   
 ├── docker-compose.yml                              
@@ -231,25 +240,25 @@ expensetracker/
 ├── README.md
 ├── pom.xml                                         
 ├── uploads/                                        (deprecated - now using S3)
-├── terraform/                                      ✅ UPDATED
-│   ├── main.tf                                     ✅ Step 22
-│   ├── variables.tf                                🔄 UPDATED in Step 23
-│   ├── vpc.tf                                      ✅ Step 22
-│   ├── security-groups.tf                          🔄 UPDATED in Step 23
-│   ├── rds.tf                                      ✅ Step 22
-│   ├── s3.tf                                       ✅ Step 22
-│   ├── iam.tf                                      ✅ Step 22
-│   ├── cloudwatch.tf                               ✅ Step 22
-│   ├── ecs.tf                                      ⭐ NEW in Step 23
-│   ├── cloudwatch-enhanced.tf                      ⭐ NEW in Step 23
-│   ├── outputs.tf                                  🔄 UPDATED in Step 23
-│   ├── terraform.tfvars.example                    ✅ Step 22
+├── terraform/                                      
+│   ├── main.tf                                     
+│   ├── variables.tf                                
+│   ├── vpc.tf                                      
+│   ├── security-groups.tf                          
+│   ├── rds.tf                                      
+│   ├── s3.tf                                       
+│   ├── iam.tf                                      
+│   ├── cloudwatch.tf                               
+│   ├── ecs.tf                                      
+│   ├── cloudwatch-enhanced.tf                      
+│   ├── outputs.tf                                  
+│   ├── terraform.tfvars.example                    
 │   ├── terraform.tfvars                            (gitignored)
 │   ├── .terraform/                                 (gitignored)
 │   ├── terraform.tfstate                           (gitignored)
 │   ├── terraform.tfstate.backup                    (gitignored)
-│   ├── .gitignore                                  ✅ Step 22
-│   └── README.md                                   ✅ Step 22
+│   ├── .gitignore                                  
+│   └── README.md                                   
 └── src/main/
     ├── java/com/harjeet/expensetracker/
     │   ├── ExpensetrackerApplication.java
